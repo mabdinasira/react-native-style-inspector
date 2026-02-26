@@ -1,7 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StyleInspector } from '../src';
 import {
   BasicLayoutScreen,
@@ -25,28 +25,30 @@ const App = () => {
     SCREENS.find((screen) => screen.key === activeScreen)?.component ?? BasicLayoutScreen;
 
   return (
-    <StyleInspector enabled={__DEV__}>
-      <View style={styles.container}>
-        <StatusBar style='light' />
-        <SafeAreaView style={styles.content}>
-          <ActiveComponent />
-        </SafeAreaView>
-        <View style={styles.tabBar}>
-          {SCREENS.map((screen) => (
-            <TouchableOpacity
-              key={screen.key}
-              style={[styles.tab, activeScreen === screen.key && styles.tabActive]}
-              onPress={() => setActiveScreen(screen.key)}
-            >
-              <Text style={[styles.tabText, activeScreen === screen.key && styles.tabTextActive]}>
-                {screen.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-          <SafeAreaView edges={['bottom']} />
+    <SafeAreaProvider>
+      <StyleInspector enabled={__DEV__}>
+        <View style={styles.container}>
+          <StatusBar style='light' />
+          <SafeAreaView style={styles.content}>
+            <ActiveComponent />
+          </SafeAreaView>
+          <View style={styles.tabBar}>
+            {SCREENS.map((screen) => (
+              <TouchableOpacity
+                key={screen.key}
+                style={[styles.tab, activeScreen === screen.key && styles.tabActive]}
+                onPress={() => setActiveScreen(screen.key)}
+              >
+                <Text style={[styles.tabText, activeScreen === screen.key && styles.tabTextActive]}>
+                  {screen.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+            <SafeAreaView edges={['bottom']} />
+          </View>
         </View>
-      </View>
-    </StyleInspector>
+      </StyleInspector>
+    </SafeAreaProvider>
   );
 };
 
