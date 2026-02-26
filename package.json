@@ -1,0 +1,47 @@
+{
+  "name": "react-native-style-inspector",
+  "version": "0.0.1",
+  "description": "A dev-mode in-app style editor for React Native — the Inspect Element experience for mobile.",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "files": [
+    "src",
+    "lib"
+  ],
+  "scripts": {
+    "lint": "biome lint --write .",
+    "fmt": "biome format --write .",
+    "check": "biome check --write . --unsafe",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --project tsconfig.build.json",
+    "fixall": "biome check --write . --unsafe && tsc --noEmit",
+    "clean": "rm -rf node_modules lib && bun install",
+    "test": "jest",
+    "example:start": "bun run --cwd example start",
+    "example:ios": "bun run --cwd example ios",
+    "example:android": "bun run --cwd example android",
+    "example:prebuild": "bun run --cwd example prebuild",
+    "example:fixall": "bun run --cwd example check && bun run --cwd example typecheck",
+    "example:clean": "bun run --cwd example clean",
+    "example:install": "cd example && bun install"
+  },
+  "keywords": [
+    "react-native",
+    "inspector",
+    "devtools",
+    "style-editor",
+    "debug"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-native": ">=0.72.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "~2.4.4",
+    "@types/react": "~19.0.0",
+    "react": "~19.1.0",
+    "react-native": "~0.81.0",
+    "typescript": "~5.7.0"
+  }
+}
