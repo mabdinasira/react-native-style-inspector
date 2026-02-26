@@ -1,4 +1,5 @@
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { BOX_MODEL_COLORS } from './constants/colors';
 
 interface BoxModelProps {
   margin?: { top: number; right: number; bottom: number; left: number };
@@ -11,45 +12,20 @@ interface BoxModelProps {
 export const BoxModelDiagram = ({ content }: BoxModelProps) => {
   // TODO: Nested colored boxes visualizing the box model
   return (
-    <View style={{ alignItems: 'center', padding: 12 }}>
-      <Text style={{ color: '#888', fontSize: 11, marginBottom: 4 }}>Box Model</Text>
-      {/* Margin layer (orange) */}
-      <View
-        style={{
-          backgroundColor: 'rgba(246, 178, 107, 0.3)',
-          padding: 8,
-          alignItems: 'center',
-        }}
-      >
-        <Text style={{ color: '#F6B26B', fontSize: 9 }}>margin</Text>
-        {/* Border layer (yellow) */}
-        <View
-          style={{
-            backgroundColor: 'rgba(255, 217, 102, 0.3)',
-            padding: 8,
-            alignItems: 'center',
-          }}
-        >
-          <Text style={{ color: '#FFD966', fontSize: 9 }}>border</Text>
-          {/* Padding layer (green) */}
-          <View
-            style={{
-              backgroundColor: 'rgba(106, 168, 79, 0.3)',
-              padding: 8,
-              alignItems: 'center',
-            }}
-          >
-            <Text style={{ color: '#6AA84F', fontSize: 9 }}>padding</Text>
-            {/* Content (blue) */}
-            <View
-              style={{
-                backgroundColor: 'rgba(74, 144, 217, 0.3)',
-                paddingHorizontal: 16,
-                paddingVertical: 8,
-                alignItems: 'center',
-              }}
-            >
-              <Text style={{ color: '#4A90D9', fontSize: 9 }}>
+    <View style={styles.container}>
+      <Text style={styles.title}>Box Model</Text>
+      {/* Margin layer */}
+      <View style={styles.marginLayer}>
+        <Text style={styles.marginLabel}>margin</Text>
+        {/* Border layer */}
+        <View style={styles.borderLayer}>
+          <Text style={styles.borderLabel}>border</Text>
+          {/* Padding layer */}
+          <View style={styles.paddingLayer}>
+            <Text style={styles.paddingLabel}>padding</Text>
+            {/* Content */}
+            <View style={styles.contentLayer}>
+              <Text style={styles.contentLabel}>
                 {content ? `${content.width} x ${content.height}` : 'content'}
               </Text>
             </View>
@@ -59,3 +35,52 @@ export const BoxModelDiagram = ({ content }: BoxModelProps) => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    padding: 12,
+  },
+  title: {
+    color: '#888',
+    fontSize: 11,
+    marginBottom: 4,
+  },
+  marginLayer: {
+    backgroundColor: BOX_MODEL_COLORS.margin,
+    padding: 8,
+    alignItems: 'center',
+  },
+  marginLabel: {
+    color: BOX_MODEL_COLORS.marginLabel,
+    fontSize: 9,
+  },
+  borderLayer: {
+    backgroundColor: BOX_MODEL_COLORS.border,
+    padding: 8,
+    alignItems: 'center',
+  },
+  borderLabel: {
+    color: BOX_MODEL_COLORS.borderLabel,
+    fontSize: 9,
+  },
+  paddingLayer: {
+    backgroundColor: BOX_MODEL_COLORS.padding,
+    padding: 8,
+    alignItems: 'center',
+  },
+  paddingLabel: {
+    color: BOX_MODEL_COLORS.paddingLabel,
+    fontSize: 9,
+  },
+  contentLayer: {
+    backgroundColor: BOX_MODEL_COLORS.content,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    alignItems: 'center',
+  },
+  contentLabel: {
+    color: BOX_MODEL_COLORS.contentLabel,
+    fontSize: 9,
+  },
+});

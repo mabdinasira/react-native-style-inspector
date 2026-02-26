@@ -1,48 +1,150 @@
-import { ScrollView, Text, View } from 'react-native';
-import type { StyleObject } from './utils/flattenStyles';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Z_INDEX } from './constants/ui';
+import { FiberAdapter } from './fiber/FiberAdapter';
+import type { MeasuredElement } from './fiber/types';
+import { formatValue, isColorProp } from './utils/styleFormatting';
 
 interface StylePanelProps {
-  componentName: string | null;
-  styles: StyleObject | null;
-  source: { fileName: string; lineNumber: number } | null;
+  element: MeasuredElement | null;
 }
 
 /** Scrollable panel showing the flattened style properties of the selected element. */
-export const StylePanel = ({ componentName, styles, source }: StylePanelProps) => {
-  if (!styles) return null;
+export const StylePanel = ({ element }: StylePanelProps) => {
+  if (!element) return null;
 
-  // TODO: Full style panel UI with property list
+  const style = FiberAdapter.getStyle(element.fiber);
+  if (!style) return null;
+
+  const source = FiberAdapter.getSource(element.fiber);
+  const entries = Object.entries(style);
+
   return (
-    <View
-      style={{
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        maxHeight: 300,
-        backgroundColor: '#1E1E1E',
-        borderTopWidth: 1,
-        borderTopColor: '#333',
-      }}
-    >
-      <View style={{ padding: 8, borderBottomWidth: 1, borderBottomColor: '#333' }}>
-        <Text style={{ color: '#E06C75', fontSize: 13, fontWeight: '600' }}>
-          {componentName ?? 'Unknown'}
-        </Text>
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.componentName}>&lt;{element.componentName}&gt;</Text>
         {source && (
-          <Text style={{ color: '#666', fontSize: 11, marginTop: 2 }}>
+          <Text style={styles.sourceText} numberOfLines={1}>
             {source.fileName}:{source.lineNumber}
           </Text>
         )}
       </View>
-      <ScrollView style={{ padding: 8 }}>
-        {Object.entries(styles).map(([key, value]) => (
-          <View key={key} style={{ flexDirection: 'row', paddingVertical: 2 }}>
-            <Text style={{ color: '#9CDCFE', fontSize: 12, flex: 1 }}>{key}</Text>
-            <Text style={{ color: '#CE9178', fontSize: 12 }}>{String(value)}</Text>
-          </View>
-        ))}
+
+      {/* Property list */}
+      <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
+        {entries.length === 0 ? (
+          <Text style={styles.emptyText}>No styles applied</Text>
+        ) : (
+          entries.map(([key, value]) => (
+            <View key={key} style={styles.row}>
+              <Text style={styles.propertyName}>{key}</Text>
+              <View style={styles.valueContainer}>
+                {isColorProp(key) && (
+                  <View style={[styles.colorSwatch, { backgroundColor: String(value) }]} />
+                )}
+                <Text style={styles.propertyValue} numberOfLines={1}>
+                  {formatValue(value)}
+                </Text>
+              </View>
+            </View>
+          ))
+        )}
       </ScrollView>
+
+      {/* Footer — property count */}
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>
+          {entries.length} {entries.length === 1 ? 'property' : 'properties'}
+        </Text>
+      </View>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    maxHeight: 260,
+    backgroundColor: 'rgba(30, 30, 30, 0.97)',
+    borderTopWidth: 1,
+    borderTopColor: '#444',
+    zIndex: Z_INDEX.STYLE_PANEL,
+  },
+  header: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#444',
+  },
+  componentName: {
+    color: '#E06C75',
+    fontSize: 13,
+    fontWeight: '600',
+    fontFamily: 'Menlo',
+  },
+  sourceText: {
+    color: '#666',
+    fontSize: 10,
+    marginTop: 2,
+    fontFamily: 'Menlo',
+  },
+  list: {
+    flexGrow: 0,
+  },
+  listContent: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 3,
+  },
+  propertyName: {
+    color: '#9CDCFE',
+    fontSize: 12,
+    fontFamily: 'Menlo',
+    flexShrink: 0,
+    marginRight: 12,
+  },
+  valueContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexShrink: 1,
+  },
+  colorSwatch: {
+    width: 12,
+    height: 12,
+    borderRadius: 2,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#666',
+    marginRight: 6,
+  },
+  propertyValue: {
+    color: '#CE9178',
+    fontSize: 12,
+    fontFamily: 'Menlo',
+    flexShrink: 1,
+  },
+  emptyText: {
+    color: '#666',
+    fontSize: 12,
+    fontStyle: 'italic',
+    paddingVertical: 8,
+  },
+  footer: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#444',
+  },
+  footerText: {
+    color: '#666',
+    fontSize: 10,
+    fontFamily: 'Menlo',
+  },
+});

@@ -1,4 +1,6 @@
 import { StyleSheet, View } from 'react-native';
+import { BOX_MODEL_COLORS } from './constants/colors';
+import { Z_INDEX } from './constants/ui';
 import { FiberAdapter } from './fiber/FiberAdapter';
 import type { MeasuredElement } from './fiber/types';
 import { extractBoxModel } from './utils/yogaLayout';
@@ -92,29 +94,24 @@ export const ElementHighlighter = ({ element }: ElementHighlighterProps) => {
   );
 };
 
-const MARGIN_COLOR = 'rgba(246, 178, 107, 0.4)';
-const PADDING_COLOR = 'rgba(147, 196, 125, 0.4)';
-const CONTENT_COLOR = 'rgba(79, 195, 247, 0.3)';
-const OUTLINE_COLOR = '#4FC3F7';
-
 const styles = StyleSheet.create({
   root: {
     ...StyleSheet.absoluteFillObject,
-    zIndex: 9997,
+    zIndex: Z_INDEX.HIGHLIGHT,
   },
   marginLayer: {
     position: 'absolute',
-    backgroundColor: MARGIN_COLOR,
+    backgroundColor: BOX_MODEL_COLORS.margin,
   },
   paddingLayer: {
-    backgroundColor: PADDING_COLOR,
+    backgroundColor: BOX_MODEL_COLORS.padding,
   },
   contentLayer: {
-    backgroundColor: CONTENT_COLOR,
+    backgroundColor: BOX_MODEL_COLORS.content,
   },
   outline: {
     position: 'absolute',
     borderWidth: 1.5,
-    borderColor: OUTLINE_COLOR,
+    borderColor: BOX_MODEL_COLORS.outline,
   },
 });

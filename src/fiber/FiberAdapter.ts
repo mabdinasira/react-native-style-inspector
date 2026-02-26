@@ -1,3 +1,4 @@
+import { MEASURE_TIMEOUT_MS } from '../constants/ui';
 import { flattenStyles } from '../utils/flattenStyles';
 import type { FiberNode } from './types';
 import { HOST_COMPONENT_TAG } from './types';
@@ -112,7 +113,12 @@ export const FiberAdapter = {
         return;
       }
 
+      const timeoutId = setTimeout(() => {
+        reject(new Error('measure() timed out'));
+      }, MEASURE_TIMEOUT_MS);
+
       target.measure((_x, _y, width, height, pageX, pageY) => {
+        clearTimeout(timeoutId);
         resolve({ x: pageX, y: pageY, width, height });
       });
     });
@@ -134,10 +140,13 @@ export const FiberAdapter = {
 
     if (!hook?.renderers) return false;
 
-    const renderer = hook.renderers.get(1);
-    if (!renderer?.overrideProps) return false;
+    for (const renderer of hook.renderers.values()) {
+      if (renderer?.overrideProps) {
+        renderer.overrideProps(fiber, ['style', key], value);
+        return true;
+      }
+    }
 
-    renderer.overrideProps(fiber, ['style', key], value);
-    return true;
+    return false;
   },
 };

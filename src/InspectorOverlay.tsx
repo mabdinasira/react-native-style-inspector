@@ -1,10 +1,12 @@
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Z_INDEX } from './constants/ui';
 import { ElementCycler } from './ElementCycler';
 import { ElementHighlighter } from './ElementHighlighter';
 import { useLayoutSnapshot } from './hooks/useLayoutSnapshot';
 import { useTapToSelect } from './hooks/useTapToSelect';
+import { StylePanel } from './StylePanel';
 
 export interface StyleInspectorProps {
   /** Only enable in dev mode. Pass `__DEV__` here. */
@@ -31,8 +33,12 @@ export const StyleInspector = ({ enabled = false, children }: StyleInspectorProp
       setIsInspecting(false);
       clearSelection();
     } else {
-      await buildSnapshot();
-      setIsInspecting(true);
+      try {
+        await buildSnapshot();
+        setIsInspecting(true);
+      } catch {
+        // Snapshot failed (no fiber root, measure errors, etc.) — stay in normal mode
+      }
     }
   };
 
@@ -66,6 +72,9 @@ export const StyleInspector = ({ enabled = false, children }: StyleInspectorProp
         </View>
       )}
 
+      {/* Style property panel — anchored to bottom */}
+      {isInspecting && <StylePanel element={selected} />}
+
       {/* Floating inspect toggle button */}
       <TouchableOpacity
         style={[styles.fab, isInspecting && styles.fabActive]}
@@ -85,7 +94,7 @@ const styles = StyleSheet.create({
   tapOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'transparent',
-    zIndex: 9998,
+    zIndex: Z_INDEX.TAP_OVERLAY,
   },
   infoBar: {
     position: 'absolute',
@@ -99,7 +108,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 8,
-    zIndex: 9999,
+    zIndex: Z_INDEX.INFO_BAR,
   },
   infoText: {
     color: '#FFFFFF',
@@ -117,7 +126,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#0F3460',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 10000,
+    zIndex: Z_INDEX.FAB,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
