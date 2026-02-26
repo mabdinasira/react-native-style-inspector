@@ -1,4 +1,4 @@
-import { Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface ElementCyclerProps {
   /** Total number of overlapping elements at the tap point */
@@ -22,25 +22,44 @@ export const ElementCycler = ({
   if (total <= 1) return null;
 
   return (
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#2D2D2D',
-        borderRadius: 4,
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-      }}
-    >
-      <TouchableOpacity onPress={onPrevious} hitSlop={8}>
-        <Text style={{ color: '#CCC', fontSize: 14 }}>▲</Text>
+    <View style={styles.container}>
+      <TouchableOpacity onPress={onPrevious} style={styles.button} activeOpacity={0.6}>
+        <Text style={styles.arrow}>▲</Text>
       </TouchableOpacity>
-      <Text style={{ color: '#CCC', fontSize: 12, marginHorizontal: 8 }}>
+
+      <Text style={styles.label} numberOfLines={1}>
         {componentName} ({currentIndex + 1}/{total})
       </Text>
-      <TouchableOpacity onPress={onNext} hitSlop={8}>
-        <Text style={{ color: '#CCC', fontSize: 14 }}>▼</Text>
+
+      <TouchableOpacity onPress={onNext} style={styles.button} activeOpacity={0.6}>
+        <Text style={styles.arrow}>▼</Text>
       </TouchableOpacity>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(30, 30, 30, 0.9)',
+    borderRadius: 6,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+  },
+  button: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  arrow: {
+    color: '#AAAAAA',
+    fontSize: 12,
+  },
+  label: {
+    color: '#DDDDDD',
+    fontSize: 12,
+    fontWeight: '500',
+    marginHorizontal: 4,
+    flexShrink: 1,
+  },
+});

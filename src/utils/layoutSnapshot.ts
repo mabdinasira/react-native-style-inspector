@@ -11,10 +11,9 @@ export const buildLayoutSnapshot = async (root: FiberNode): Promise<MeasuredElem
 
   // Measure all host fibers in parallel
   const measurements = await Promise.allSettled(
-    hostFibers.map(async (fiber) => {
+    hostFibers.map(async ({ fiber, depth }) => {
       const rect = await FiberAdapter.measure(fiber);
       const style = FiberAdapter.getStyle(fiber);
-      const depth = getFiberDepth(fiber);
 
       return {
         fiber,
@@ -31,7 +30,11 @@ export const buildLayoutSnapshot = async (root: FiberNode): Promise<MeasuredElem
 
   for (const result of measurements) {
     if (result.status === 'fulfilled') {
-      elements.push(result.value);
+      const element = result.value;
+      // Skip zero-size elements — invisible and untappable
+      if (element.width > 0 && element.height > 0) {
+        elements.push(element);
+      }
     }
     // Skip fibers that fail to measure (unmounted, off-screen, etc.)
   }
@@ -43,15 +46,4 @@ export const buildLayoutSnapshot = async (root: FiberNode): Promise<MeasuredElem
   });
 
   return elements;
-};
-
-/** Count the depth of a fiber in the tree by walking up the return pointers. */
-const getFiberDepth = (fiber: FiberNode): number => {
-  let depth = 0;
-  let current = fiber.return;
-  while (current) {
-    depth++;
-    current = current.return;
-  }
-  return depth;
 };

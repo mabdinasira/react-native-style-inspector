@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { flattenStyles } from '../utils/flattenStyles';
 import type { FiberNode } from './types';
 import { HOST_COMPONENT_TAG } from './types';
 
@@ -13,35 +13,44 @@ export const FiberAdapter = {
    */
   getFiberRoot(): FiberNode | null {
     const hook = (globalThis as Record<string, unknown>).__REACT_DEVTOOLS_GLOBAL_HOOK__ as
-      | { getFiberRoots?: (id: number) => Set<{ current: FiberNode }> }
+      | {
+          renderers?: Map<number, unknown>;
+          getFiberRoots?: (id: number) => Set<{ current: FiberNode }>;
+        }
       | undefined;
 
-    if (!hook?.getFiberRoots) return null;
+    if (!(hook?.renderers && hook.getFiberRoots)) return null;
 
-    // Renderer ID 1 is typically the React Native renderer
-    const roots = hook.getFiberRoots(1);
-    if (!roots || roots.size === 0) return null;
+    // Try each renderer ID — the RN renderer isn't always ID 1
+    for (const rendererId of hook.renderers.keys()) {
+      const roots = hook.getFiberRoots(rendererId);
+      if (!roots || roots.size === 0) continue;
 
-    const root = roots.values().next().value;
-    return root?.current ?? null;
+      const root = roots.values().next().value;
+      if (root?.current) return root.current;
+    }
+
+    return null;
   },
 
   /**
-   * Walk the fiber tree and collect all host component fibers.
+   * Walk the fiber tree and collect all host component fibers with their depth.
+   * Depth is needed later for z-ordering in the layout snapshot.
    */
-  walkHostFibers(root: FiberNode): FiberNode[] {
-    const hostFibers: FiberNode[] = [];
+  walkHostFibers(root: FiberNode): Array<{ fiber: FiberNode; depth: number }> {
+    const hostFibers: Array<{ fiber: FiberNode; depth: number }> = [];
 
-    const walk = (fiber: FiberNode | null, _depth: number) => {
+    const walk = (fiber: FiberNode | null, depth: number) => {
       if (!fiber) return;
 
       if (fiber.tag === HOST_COMPONENT_TAG) {
-        hostFibers.push(fiber);
+        hostFibers.push({ fiber, depth });
       }
 
-      walk(fiber.child, _depth + 1);
-      walk(fiber.sibling, _depth);
+      walk(fiber.child, depth + 1);
+      walk(fiber.sibling, depth);
     };
+
     walk(root.child, 0);
     return hostFibers;
   },
@@ -50,12 +59,7 @@ export const FiberAdapter = {
    * Get the flattened style object from a fiber's props.
    */
   getStyle(fiber: FiberNode): Record<string, unknown> | null {
-    const style = fiber.memoizedProps?.style;
-    if (!style) return null;
-    return StyleSheet.flatten(style as Parameters<typeof StyleSheet.flatten>[0]) as Record<
-      string,
-      unknown
-    >;
+    return flattenStyles(fiber.memoizedProps?.style);
   },
 
   /**
@@ -80,26 +84,35 @@ export const FiberAdapter = {
    * Returns a promise with { x, y, width, height }.
    */
   measure(fiber: FiberNode): Promise<{ x: number; y: number; width: number; height: number }> {
-    return new Promise((resolve, reject) => {
-      const stateNode = fiber.stateNode as {
-        measure?: (
-          cb: (
-            x: number,
-            y: number,
-            width: number,
-            height: number,
-            pageX: number,
-            pageY: number,
-          ) => void,
-        ) => void;
-      };
+    type MeasureCallback = (
+      x: number,
+      y: number,
+      width: number,
+      height: number,
+      pageX: number,
+      pageY: number,
+    ) => void;
+    type Measurable = { measure?: (cb: MeasureCallback) => void };
 
-      if (!stateNode?.measure) {
+    return new Promise((resolve, reject) => {
+      const stateNode = fiber.stateNode as
+        | (Measurable & {
+            canonical?: Measurable & { publicInstance?: Measurable };
+          })
+        | null;
+
+      // Old arch: stateNode.measure()
+      // Fabric: stateNode.canonical.publicInstance.measure()
+      const target = stateNode?.measure
+        ? stateNode
+        : (stateNode?.canonical?.publicInstance ?? stateNode?.canonical);
+
+      if (!target?.measure) {
         reject(new Error('Fiber stateNode does not support measure()'));
         return;
       }
 
-      stateNode.measure((_x, _y, width, height, pageX, pageY) => {
+      target.measure((_x, _y, width, height, pageX, pageY) => {
         resolve({ x: pageX, y: pageY, width, height });
       });
     });

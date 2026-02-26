@@ -2,40 +2,42 @@ import { useCallback, useRef, useState } from 'react';
 import { FiberAdapter } from '../fiber/FiberAdapter';
 import type { MeasuredElement } from '../fiber/types';
 import { buildLayoutSnapshot } from '../utils/layoutSnapshot';
+import { useDebouncedCallback } from './useDebouncedCallback';
 
 /**
  * Builds and caches the layout snapshot when inspect mode is activated.
- * Invalidates on layout changes (debounced).
+ * Call `buildSnapshot` on inspect-mode entry. Call `invalidate` after
+ * style mutations — it debounces and rebuilds automatically.
  */
 export const useLayoutSnapshot = () => {
   const [snapshot, setSnapshot] = useState<MeasuredElement[]>([]);
   const [isBuilding, setIsBuilding] = useState(false);
-  const invalidatedRef = useRef(false);
+  const snapshotRef = useRef<MeasuredElement[]>([]);
 
-  const buildSnapshot = useCallback(async () => {
+  const buildSnapshot = useCallback(async (): Promise<number> => {
     const root = FiberAdapter.getFiberRoot();
-    if (!root) return;
+    if (!root) return 0;
 
     setIsBuilding(true);
     try {
       const elements = await buildLayoutSnapshot(root);
+      snapshotRef.current = elements;
       setSnapshot(elements);
+      return elements.length;
     } finally {
       setIsBuilding(false);
     }
   }, []);
 
-  const invalidate = useCallback(() => {
-    invalidatedRef.current = true;
-  }, []);
+  /** Mark stale — debounced 300ms so rapid style edits don't rebuild every time. */
+  const invalidate = useDebouncedCallback(buildSnapshot, 300);
 
-  /** Rebuild snapshot if it was invalidated, then return it. */
+  /** Rebuild only if the snapshot is empty (first time). */
   const ensureFresh = useCallback(async () => {
-    if (invalidatedRef.current || snapshot.length === 0) {
-      invalidatedRef.current = false;
+    if (snapshotRef.current.length === 0) {
       await buildSnapshot();
     }
-  }, [buildSnapshot, snapshot.length]);
+  }, [buildSnapshot]);
 
   return { snapshot, isBuilding, buildSnapshot, invalidate, ensureFresh };
 };
