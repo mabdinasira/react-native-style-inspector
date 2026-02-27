@@ -1,7 +1,9 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+// import { BoxModelDiagram } from './BoxModelDiagram';
 import { Z_INDEX } from './constants/ui';
 import { FiberAdapter } from './fiber/FiberAdapter';
 import type { MeasuredElement } from './fiber/types';
+import { formatSourceLocation, getOwnerName, getSourceLocation } from './utils/sourceMapping';
 import { formatValue, isColorProp } from './utils/styleFormatting';
 
 interface StylePanelProps {
@@ -15,7 +17,7 @@ export const StylePanel = ({ element }: StylePanelProps) => {
   const style = FiberAdapter.getStyle(element.fiber);
   if (!style) return null;
 
-  const source = FiberAdapter.getSource(element.fiber);
+  const source = getSourceLocation(element.fiber);
   const entries = Object.entries(style);
 
   return (
@@ -23,12 +25,19 @@ export const StylePanel = ({ element }: StylePanelProps) => {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.componentName}>&lt;{element.componentName}&gt;</Text>
-        {source && (
+        {source ? (
           <Text style={styles.sourceText} numberOfLines={1}>
-            {source.fileName}:{source.lineNumber}
+            {formatSourceLocation(source)}
+          </Text>
+        ) : (
+          <Text style={styles.sourceText} numberOfLines={1}>
+            {getOwnerName(element.fiber)}
           </Text>
         )}
       </View>
+
+      {/* Box model visualization */}
+      {/* <BoxModelDiagram element={element} /> */}
 
       {/* Property list */}
       <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>

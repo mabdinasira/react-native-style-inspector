@@ -1,32 +1,45 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { BOX_MODEL_COLORS } from './constants/colors';
+import { FiberAdapter } from './fiber/FiberAdapter';
+import type { MeasuredElement } from './fiber/types';
+import type { BoxModel } from './utils/yogaLayout';
+import { extractBoxModel } from './utils/yogaLayout';
 
-interface BoxModelProps {
-  margin?: { top: number; right: number; bottom: number; left: number };
-  border?: { top: number; right: number; bottom: number; left: number };
-  padding?: { top: number; right: number; bottom: number; left: number };
-  content?: { width: number; height: number };
+interface BoxModelDiagramProps {
+  element: MeasuredElement | null;
 }
 
-/** Visual margin -> border -> padding -> content diagram. */
-export const BoxModelDiagram = ({ content }: BoxModelProps) => {
-  // TODO: Nested colored boxes visualizing the box model
+/** Chrome DevTools-style box model diagram with actual values on each edge. */
+export const BoxModelDiagram = ({ element }: BoxModelDiagramProps) => {
+  if (!element) return null;
+
+  const style = FiberAdapter.getStyle(element.fiber);
+  const boxModel = extractBoxModel(style, {
+    width: element.width,
+    height: element.height,
+  });
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Box Model</Text>
       {/* Margin layer */}
       <View style={styles.marginLayer}>
-        <Text style={styles.marginLabel}>margin</Text>
+        <Text style={styles.layerLabel}>margin</Text>
+        <EdgeValues edges={boxModel.margin} color={BOX_MODEL_COLORS.marginLabel} />
+
         {/* Border layer */}
         <View style={styles.borderLayer}>
-          <Text style={styles.borderLabel}>border</Text>
+          <Text style={styles.layerLabel}>border</Text>
+          <EdgeValues edges={boxModel.border} color={BOX_MODEL_COLORS.borderLabel} />
+
           {/* Padding layer */}
           <View style={styles.paddingLayer}>
-            <Text style={styles.paddingLabel}>padding</Text>
+            <Text style={styles.layerLabel}>padding</Text>
+            <EdgeValues edges={boxModel.padding} color={BOX_MODEL_COLORS.paddingLabel} />
+
             {/* Content */}
             <View style={styles.contentLayer}>
-              <Text style={styles.contentLabel}>
-                {content ? `${content.width} x ${content.height}` : 'content'}
+              <Text style={styles.contentText}>
+                {Math.round(boxModel.content.width)} x {Math.round(boxModel.content.height)}
               </Text>
             </View>
           </View>
@@ -36,51 +49,98 @@ export const BoxModelDiagram = ({ content }: BoxModelProps) => {
   );
 };
 
+interface EdgeValuesProps {
+  edges: BoxModel['margin'];
+  color: string;
+}
+
+/** Renders the four edge values (top/right/bottom/left) around a layer. */
+const EdgeValues = ({ edges, color }: EdgeValuesProps) => {
+  const valueStyle = [styles.edgeValue, { color }];
+
+  return (
+    <>
+      <View style={styles.edgeTop}>
+        <Text style={valueStyle}>{edges.top || '-'}</Text>
+      </View>
+      <View style={styles.edgeRow}>
+        <Text style={valueStyle}>{edges.left || '-'}</Text>
+        <View style={styles.edgeSpacer} />
+        <Text style={valueStyle}>{edges.right || '-'}</Text>
+      </View>
+      <View style={styles.edgeBottom}>
+        <Text style={valueStyle}>{edges.bottom || '-'}</Text>
+      </View>
+    </>
+  );
+};
+
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    padding: 12,
-  },
-  title: {
-    color: '#888',
-    fontSize: 11,
-    marginBottom: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#444',
   },
   marginLayer: {
     backgroundColor: BOX_MODEL_COLORS.margin,
-    padding: 8,
     alignItems: 'center',
-  },
-  marginLabel: {
-    color: BOX_MODEL_COLORS.marginLabel,
-    fontSize: 9,
+    width: '100%',
+    paddingVertical: 2,
+    paddingHorizontal: 4,
   },
   borderLayer: {
     backgroundColor: BOX_MODEL_COLORS.border,
-    padding: 8,
     alignItems: 'center',
-  },
-  borderLabel: {
-    color: BOX_MODEL_COLORS.borderLabel,
-    fontSize: 9,
+    width: '100%',
+    paddingVertical: 2,
+    paddingHorizontal: 4,
   },
   paddingLayer: {
     backgroundColor: BOX_MODEL_COLORS.padding,
-    padding: 8,
     alignItems: 'center',
-  },
-  paddingLabel: {
-    color: BOX_MODEL_COLORS.paddingLabel,
-    fontSize: 9,
+    width: '100%',
+    paddingVertical: 2,
+    paddingHorizontal: 4,
   },
   contentLayer: {
     backgroundColor: BOX_MODEL_COLORS.content,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    paddingVertical: 6,
+  },
+  contentText: {
+    color: BOX_MODEL_COLORS.contentLabel,
+    fontSize: 10,
+    fontFamily: 'Menlo',
+    fontWeight: '600',
+  },
+  layerLabel: {
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontSize: 8,
+    fontFamily: 'Menlo',
+    alignSelf: 'flex-start',
+  },
+  edgeTop: {
     alignItems: 'center',
   },
-  contentLabel: {
-    color: BOX_MODEL_COLORS.contentLabel,
+  edgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    justifyContent: 'space-between',
+  },
+  edgeSpacer: {
+    flex: 1,
+  },
+  edgeBottom: {
+    alignItems: 'center',
+  },
+  edgeValue: {
     fontSize: 9,
+    fontFamily: 'Menlo',
+    fontWeight: '600',
   },
 });
