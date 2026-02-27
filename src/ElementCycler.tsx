@@ -42,7 +42,6 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(30, 30, 30, 0.9)',
     borderRadius: 6,
     paddingHorizontal: 4,
     paddingVertical: 2,
@@ -53,11 +52,11 @@ const styles = StyleSheet.create({
   },
   arrow: {
     color: '#AAAAAA',
-    fontSize: 12,
+    fontSize: 13,
   },
   label: {
     color: '#DDDDDD',
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '500',
     marginHorizontal: 4,
     flexShrink: 1,

@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react';
 import { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Z_INDEX } from './constants/ui';
-import { ElementCycler } from './ElementCycler';
 import { ElementHighlighter } from './ElementHighlighter';
+import { FloatingPanel } from './floatingPanel/FloatingPanel';
+import type { PanelState } from './floatingPanel/types';
 import { useLayoutSnapshot } from './hooks/useLayoutSnapshot';
 import { useTapToSelect } from './hooks/useTapToSelect';
-import { StylePanel } from './StylePanel';
 
 export interface StyleInspectorProps {
   /** Only enable in dev mode. Pass `__DEV__` here. */
@@ -28,6 +28,9 @@ export const StyleInspector = ({ enabled = false, children }: StyleInspectorProp
     return <>{children}</>;
   }
 
+  // Derive panel state from inspector state
+  const panelState: PanelState = isInspecting ? (selected ? 'expanded' : 'handle') : 'bubble';
+
   const toggleInspect = async () => {
     if (isInspecting) {
       setIsInspecting(false);
@@ -39,6 +42,16 @@ export const StyleInspector = ({ enabled = false, children }: StyleInspectorProp
       } catch {
         // Snapshot failed (no fiber root, measure errors, etc.) — stay in normal mode
       }
+    }
+  };
+
+  const handleClose = () => {
+    if (selected) {
+      // Expanded → handle (deselect element, stay in inspect mode)
+      clearSelection();
+    } else {
+      // Handle → bubble (exit inspect mode)
+      setIsInspecting(false);
     }
   };
 
@@ -58,31 +71,17 @@ export const StyleInspector = ({ enabled = false, children }: StyleInspectorProp
       {/* Highlight overlay — margin/padding/content visualization */}
       {isInspecting && <ElementHighlighter element={selected} />}
 
-      {/* Element cycling controls — visible when multiple elements overlap */}
-      {isInspecting && selected && (
-        <View style={styles.infoBar}>
-          <Text style={styles.infoText}>{selected.componentName}</Text>
-          <ElementCycler
-            total={matches.length}
-            currentIndex={selectedIndex}
-            componentName={selected.componentName}
-            onPrevious={cyclePrevious}
-            onNext={cycleNext}
-          />
-        </View>
-      )}
-
-      {/* Style property panel — anchored to bottom */}
-      {isInspecting && <StylePanel element={selected} />}
-
-      {/* Floating inspect toggle button */}
-      <TouchableOpacity
-        style={[styles.fab, isInspecting && styles.fabActive]}
-        onPress={toggleInspect}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.fabText}>{isInspecting ? '✕' : '⊙'}</Text>
-      </TouchableOpacity>
+      {/* Floating panel — bubble / handle / expanded */}
+      <FloatingPanel
+        panelState={panelState}
+        selected={selected}
+        matches={matches}
+        selectedIndex={selectedIndex}
+        onToggleInspect={toggleInspect}
+        onCycleNext={cycleNext}
+        onCyclePrevious={cyclePrevious}
+        onClose={handleClose}
+      />
     </View>
   );
 };
@@ -95,49 +94,5 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'transparent',
     zIndex: Z_INDEX.TAP_OVERLAY,
-  },
-  infoBar: {
-    position: 'absolute',
-    bottom: 100,
-    left: 16,
-    right: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: 'rgba(22, 33, 62, 0.95)',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    zIndex: Z_INDEX.INFO_BAR,
-  },
-  infoText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
-    flexShrink: 1,
-  },
-  fab: {
-    position: 'absolute',
-    bottom: 160,
-    right: 16,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#0F3460',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: Z_INDEX.FAB,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  fabActive: {
-    backgroundColor: '#E94560',
-  },
-  fabText: {
-    color: '#FFFFFF',
-    fontSize: 20,
   },
 });
