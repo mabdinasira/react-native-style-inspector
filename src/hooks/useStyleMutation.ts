@@ -1,38 +1,32 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useMemo } from 'react';
 import { FiberAdapter } from '../fiber/FiberAdapter';
 import type { MeasuredElement } from '../fiber/types';
+import { flattenStyles } from '../utils/flattenStyles';
 
 /**
- * Applies live style changes via overrideProps.
- * Tracks original styles for reset functionality.
- * Phase 2 — placeholder for now.
+ * Captures the original flattened style for an element and provides
+ * a function to replace the element's entire style via overrideProps.
+ *
+ * All override/disabled tracking belongs in the consuming component —
+ * this hook only handles fiber interaction.
  */
-export const useStyleMutation = (element: MeasuredElement | null) => {
-  const originalStyleRef = useRef<Record<string, unknown> | null>(null);
+export const useStyleMutation = (element: MeasuredElement) => {
+  const originalStyle = useMemo(() => {
+    const flat = flattenStyles(element.fiber.memoizedProps?.style);
+    return flat ? JSON.parse(JSON.stringify(flat)) : {};
+  }, [element]);
 
-  const mutateStyle = useCallback(
-    (key: string, value: unknown) => {
-      if (!element) return false;
-
-      // Save original style on first mutation
-      if (!originalStyleRef.current) {
-        originalStyleRef.current = FiberAdapter.getStyle(element.fiber);
-      }
-
-      return FiberAdapter.overrideStyle(element.fiber, key, value);
-    },
+  /** Replace the element's entire style with a flat object. */
+  const applyStyle = useCallback(
+    (style: Record<string, unknown>) => FiberAdapter.setStyle(element.fiber, style),
     [element],
   );
 
-  const resetStyles = useCallback(() => {
-    if (!(element && originalStyleRef.current)) return;
+  /** Restore the element's original style. */
+  const resetStyle = useCallback(
+    () => FiberAdapter.setStyle(element.fiber, originalStyle),
+    [element, originalStyle],
+  );
 
-    // Re-apply all original style values
-    for (const [key, value] of Object.entries(originalStyleRef.current)) {
-      FiberAdapter.overrideStyle(element.fiber, key, value);
-    }
-    originalStyleRef.current = null;
-  }, [element]);
-
-  return { mutateStyle, resetStyles };
+  return { originalStyle, applyStyle, resetStyle };
 };

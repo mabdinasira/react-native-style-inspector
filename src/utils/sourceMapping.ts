@@ -32,18 +32,11 @@ export const getSourceLocation = (fiber: FiberNode): SourceLocation | null => {
 /**
  * Format a source location for display.
  * Strips the project root for readability.
+ * Adds extension to the file name and line number, e.g. "MyComponent.js:42"
  */
 export const formatSourceLocation = (source: SourceLocation): string => {
-  // Strip common prefixes for readability
-  let fileName = source.fileName;
-  const prefixes = ['/node_modules/', '/src/'];
-  for (const prefix of prefixes) {
-    const idx = fileName.lastIndexOf(prefix);
-    if (idx !== -1) {
-      fileName = fileName.substring(idx + 1);
-      break;
-    }
-  }
+  const lastSlash = source.fileName.lastIndexOf('/');
+  const fileName = lastSlash === -1 ? source.fileName : source.fileName.substring(lastSlash + 1);
   return `${fileName}:${source.lineNumber}`;
 };
 

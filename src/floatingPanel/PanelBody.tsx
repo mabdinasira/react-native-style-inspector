@@ -1,7 +1,9 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { FiberAdapter } from '../fiber/FiberAdapter';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Checkbox } from '../components/Checkbox';
 import type { MeasuredElement } from '../fiber/types';
+import { useStyleOverrides } from '../hooks/useStyleOverrides';
 import { formatValue, isColorProp } from '../utils/styleFormatting';
+import { EditableValue } from './EditableValue';
 import { PanelFooter } from './PanelFooter';
 
 interface PanelBodyProps {
@@ -10,10 +12,10 @@ interface PanelBodyProps {
 
 /** Scrollable style property list with footer — the main content of the expanded panel. */
 export const PanelBody = ({ element }: PanelBodyProps) => {
-  const style = FiberAdapter.getStyle(element.fiber);
-  if (!style) return null;
+  const { entries, resolveEntry, handleToggle, handleValueChange, handleKeyChange } =
+    useStyleOverrides(element);
 
-  const entries = Object.entries(style);
+  if (entries.length === 0) return null;
 
   return (
     <View style={styles.container}>
@@ -21,24 +23,37 @@ export const PanelBody = ({ element }: PanelBodyProps) => {
         style={styles.list}
         contentContainerStyle={styles.listContent}
         nestedScrollEnabled
+        keyboardShouldPersistTaps='handled'
       >
-        {entries.length === 0 ? (
-          <Text style={styles.emptyText}>No styles applied</Text>
-        ) : (
-          entries.map(([key, value], index) => (
-            <View key={key} style={[styles.row, index % 2 === 0 && styles.rowAlt]}>
-              <Text style={styles.propertyName}>{key}</Text>
-              <View style={styles.valueContainer}>
-                {isColorProp(key) && (
-                  <View style={[styles.colorSwatch, { backgroundColor: String(value) }]} />
-                )}
-                <Text style={styles.propertyValue} numberOfLines={1}>
-                  {formatValue(value)}
-                </Text>
+        {entries.map(([originalKey, originalValue], index) => {
+          const { activeKey, displayValue, disabled } = resolveEntry(originalKey, originalValue);
+          return (
+            <View key={originalKey} style={[styles.row, index % 2 === 0 && styles.rowAlt]}>
+              <Checkbox checked={!disabled} onToggle={() => handleToggle(originalKey)} />
+              <View style={[styles.rowContent, disabled && styles.rowDisabled]}>
+                <EditableValue
+                  value={activeKey}
+                  displayValue={activeKey}
+                  onSubmit={(newKey) => handleKeyChange(originalKey, String(newKey))}
+                  variant='key'
+                  disabled={disabled}
+                />
+                <View style={styles.valueContainer}>
+                  {isColorProp(activeKey) && (
+                    <View style={[styles.colorSwatch, { backgroundColor: String(displayValue) }]} />
+                  )}
+                  <EditableValue
+                    value={displayValue}
+                    displayValue={formatValue(displayValue)}
+                    onSubmit={(newValue) => handleValueChange(originalKey, newValue)}
+                    variant='value'
+                    disabled={disabled}
+                  />
+                </View>
               </View>
             </View>
-          ))
-        )}
+          );
+        })}
       </ScrollView>
 
       <PanelFooter propertyCount={entries.length} width={element.width} height={element.height} />
@@ -59,21 +74,22 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 5,
     paddingHorizontal: 8,
     borderRadius: 4,
   },
+  rowContent: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   rowAlt: {
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
   },
-  propertyName: {
-    color: '#9CDCFE',
-    fontSize: 13,
-    fontFamily: 'Menlo',
-    flexShrink: 0,
-    marginRight: 12,
+  rowDisabled: {
+    opacity: 0.35,
   },
   valueContainer: {
     flexDirection: 'row',
@@ -87,17 +103,5 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: '#666',
     marginRight: 6,
-  },
-  propertyValue: {
-    color: '#CE9178',
-    fontSize: 13,
-    fontFamily: 'Menlo',
-    flexShrink: 1,
-  },
-  emptyText: {
-    color: '#666',
-    fontSize: 13,
-    fontStyle: 'italic',
-    paddingVertical: 8,
   },
 });

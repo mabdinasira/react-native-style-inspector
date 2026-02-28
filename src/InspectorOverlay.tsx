@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Z_INDEX } from './constants/ui';
+import { FLOATING_PANEL, Z_INDEX } from './constants/ui';
 import { ElementHighlighter } from './ElementHighlighter';
 import { FloatingPanel } from './floatingPanel/FloatingPanel';
 import type { PanelState } from './floatingPanel/types';
+import { useDebouncedCallback } from './hooks/useDebouncedCallback';
 import { useLayoutSnapshot } from './hooks/useLayoutSnapshot';
 import { useTapToSelect } from './hooks/useTapToSelect';
 
@@ -20,9 +21,19 @@ export interface StyleInspectorProps {
  */
 export const StyleInspector = ({ enabled = false, children }: StyleInspectorProps) => {
   const [isInspecting, setIsInspecting] = useState(false);
+  const [highlightVisible, setHighlightVisible] = useState(false);
   const { snapshot, buildSnapshot } = useLayoutSnapshot();
   const { selected, matches, selectedIndex, handleTap, cycleNext, cyclePrevious, clearSelection } =
     useTapToSelect(snapshot);
+
+  const hideHighlight = useDebouncedCallback(
+    () => setHighlightVisible(false),
+    FLOATING_PANEL.HIGHLIGHT_FLASH_MS,
+  );
+  const flashHighlight = useCallback(() => {
+    setHighlightVisible(true);
+    hideHighlight();
+  }, [hideHighlight]);
 
   if (!enabled) {
     return <>{children}</>;
@@ -64,12 +75,18 @@ export const StyleInspector = ({ enabled = false, children }: StyleInspectorProp
         <View
           style={styles.tapOverlay}
           onStartShouldSetResponder={() => true}
-          onResponderRelease={handleTap}
+          onResponderRelease={(event) => {
+            handleTap(event);
+            flashHighlight();
+          }}
         />
       )}
 
-      {/* Highlight overlay — margin/padding/content visualization */}
-      {isInspecting && <ElementHighlighter element={selected} />}
+      {/* Persistent outline — always visible while element is selected */}
+      {isInspecting && selected && <ElementHighlighter element={selected} outlineOnly />}
+
+      {/* Full box model highlight — flashes on select/cycle, then auto-hides */}
+      {highlightVisible && <ElementHighlighter element={selected} />}
 
       {/* Floating panel — bubble / handle / expanded */}
       <FloatingPanel
@@ -78,8 +95,14 @@ export const StyleInspector = ({ enabled = false, children }: StyleInspectorProp
         matches={matches}
         selectedIndex={selectedIndex}
         onToggleInspect={toggleInspect}
-        onCycleNext={cycleNext}
-        onCyclePrevious={cyclePrevious}
+        onCycleNext={() => {
+          cycleNext();
+          flashHighlight();
+        }}
+        onCyclePrevious={() => {
+          cyclePrevious();
+          flashHighlight();
+        }}
         onClose={handleClose}
       />
     </View>

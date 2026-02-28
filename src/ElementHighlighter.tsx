@@ -7,11 +7,14 @@ import { extractBoxModel } from './utils/yogaLayout';
 
 interface ElementHighlighterProps {
   element: MeasuredElement | null;
+  outlineOnly?: boolean;
 }
 
 /**
  * Draws a Chrome DevTools-style highlight on the selected element.
- * Shows margin (orange), padding (green), and content (blue) regions.
+ *
+ * Full mode: margin (orange), padding (green), content (blue) fills + outline.
+ * Outline-only mode: just the crisp border — keeps selection visible without obscuring content.
  *
  * The measured rect is the border box (includes border + padding, NOT margin).
  * Margin extends outward, padding/content sit inside.
@@ -20,7 +23,7 @@ interface ElementHighlighterProps {
  * so only the "strips" around the edges remain visible:
  *   orange margin strips → green padding strips → blue content fill
  */
-export const ElementHighlighter = ({ element }: ElementHighlighterProps) => {
+export const ElementHighlighter = ({ element, outlineOnly = false }: ElementHighlighterProps) => {
   if (!element) return null;
 
   const style = FiberAdapter.getStyle(element.fiber);
@@ -37,46 +40,50 @@ export const ElementHighlighter = ({ element }: ElementHighlighterProps) => {
 
   return (
     <View pointerEvents='none' style={styles.root}>
-      {/* Margin layer — orange, covers full area including margins */}
-      <View
-        style={[
-          styles.marginLayer,
-          {
-            left: marginBoxLeft,
-            top: marginBoxTop,
-            width: marginBoxWidth,
-            height: marginBoxHeight,
-          },
-        ]}
-      >
-        {/* Padding layer — green, covers the element's border box */}
-        <View
-          style={[
-            styles.paddingLayer,
-            {
-              position: 'absolute',
-              left: margin.left,
-              top: margin.top,
-              width: element.width,
-              height: element.height,
-            },
-          ]}
-        >
-          {/* Content layer — blue, inset by border + padding */}
+      {!outlineOnly && (
+        <>
+          {/* Margin layer — orange, covers full area including margins */}
           <View
             style={[
-              styles.contentLayer,
+              styles.marginLayer,
               {
-                position: 'absolute',
-                left: border.left + padding.left,
-                top: border.top + padding.top,
-                right: border.right + padding.right,
-                bottom: border.bottom + padding.bottom,
+                left: marginBoxLeft,
+                top: marginBoxTop,
+                width: marginBoxWidth,
+                height: marginBoxHeight,
               },
             ]}
-          />
-        </View>
-      </View>
+          >
+            {/* Padding layer — green, covers the element's border box */}
+            <View
+              style={[
+                styles.paddingLayer,
+                {
+                  position: 'absolute',
+                  left: margin.left,
+                  top: margin.top,
+                  width: element.width,
+                  height: element.height,
+                },
+              ]}
+            >
+              {/* Content layer — blue, inset by border + padding */}
+              <View
+                style={[
+                  styles.contentLayer,
+                  {
+                    position: 'absolute',
+                    left: border.left + padding.left,
+                    top: border.top + padding.top,
+                    right: border.right + padding.right,
+                    bottom: border.bottom + padding.bottom,
+                  },
+                ]}
+              />
+            </View>
+          </View>
+        </>
+      )}
 
       {/* Crisp outline at the border box edge */}
       <View

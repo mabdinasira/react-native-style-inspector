@@ -5,12 +5,14 @@ export const useDebouncedCallback = <Args extends unknown[]>(
   delay: number,
 ): ((...args: Args) => void) => {
   const timeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const callbackRef = useRef(callback);
+  callbackRef.current = callback;
 
   return useCallback(
     (...args: Args) => {
       if (timeout.current) clearTimeout(timeout.current);
-      timeout.current = setTimeout(() => callback(...args), delay);
+      timeout.current = setTimeout(() => callbackRef.current(...args), delay);
     },
-    [callback, delay],
+    [delay],
   );
 };

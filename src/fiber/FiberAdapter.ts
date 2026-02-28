@@ -125,10 +125,11 @@ export const FiberAdapter = {
   },
 
   /**
-   * Override a style property on a fiber using the devtools hook.
+   * Replace the style on a fiber using the devtools hook.
+   * Caller is responsible for building the final style object.
    * Works on both old arch and Fabric.
    */
-  overrideStyle(fiber: FiberNode, key: string, value: unknown): boolean {
+  setStyle(fiber: FiberNode, style: unknown): boolean {
     const hook = (globalThis as Record<string, unknown>).__REACT_DEVTOOLS_GLOBAL_HOOK__ as
       | {
           renderers?: Map<
@@ -142,7 +143,7 @@ export const FiberAdapter = {
 
     for (const renderer of hook.renderers.values()) {
       if (renderer?.overrideProps) {
-        renderer.overrideProps(fiber, ['style', key], value);
+        renderer.overrideProps(fiber, ['style'], style);
         return true;
       }
     }
