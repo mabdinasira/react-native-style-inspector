@@ -1,6 +1,6 @@
 import { Animated, StyleSheet, useWindowDimensions, View } from 'react-native';
-import { FLOATING_PANEL, Z_INDEX } from '../constants/ui';
-import { useFloatingPanel } from '../hooks/useFloatingPanel';
+import { FLOATING_PANEL, Z_INDEX } from '../constants';
+import { useFloatingPanel } from '../hooks';
 import { HandleContent } from './HandleContent';
 import { InspectorBubble } from './InspectorBubble';
 import { PanelBody } from './PanelBody';

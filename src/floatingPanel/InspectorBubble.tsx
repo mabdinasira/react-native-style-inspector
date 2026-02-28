@@ -1,16 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
+import { INSPECTOR_BUBBLE } from '../constants';
 
-const BUBBLE_SIZE = 48;
-const SWEEP_WIDTH = 2.5;
-const CENTER_DOT_SIZE = 8;
-
-const TRAIL_ARMS = [
-  { key: 'sweep', offsetDeg: 0, opacity: 0.9 },
-  { key: 'trail-1', offsetDeg: -18, opacity: 0.45 },
-  { key: 'trail-2', offsetDeg: -36, opacity: 0.3 },
-  { key: 'trail-3', offsetDeg: -54, opacity: 0.2 },
-] as const;
+const { SIZE: BUBBLE_SIZE, SWEEP_WIDTH, CENTER_DOT_SIZE, TRAIL_ARMS } = INSPECTOR_BUBBLE;
 
 /**
  * Inspector bubble with a radar-sweep animation.

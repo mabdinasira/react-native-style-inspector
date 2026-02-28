@@ -101,8 +101,22 @@ bun run android           # Run Android emulator
 6. **TypeScript strict mode** — no `any` types, explicit return types on exports
 7. **Path aliases:** `@/*` maps to `src/*` in the library
 8. **Barrel exports** (`index.ts`) in subdirectories only
-9. **camelCase** for file names (except React components which use PascalCase)
-10. **Keep components small** — one component per file
+9. **Consolidate imports:** Merge multiple imports from the same module into one line. Use barrel exports for cross-directory imports. Only use direct file imports to break require cycles.
+
+    ```typescript
+    // CORRECT
+    import { BOX_MODEL_COLORS, Z_INDEX } from './constants';
+    import { FiberAdapter, type MeasuredElement } from './fiber';
+
+    // WRONG — fragmented imports from same source
+    import { BOX_MODEL_COLORS } from './constants/colors';
+    import { Z_INDEX } from './constants/ui';
+    import { FiberAdapter } from './fiber/FiberAdapter';
+    import type { MeasuredElement } from './fiber/types';
+    ```
+
+10. **camelCase** for file names (except React components which use PascalCase)
+11. **Keep components small** — one component per file
 
 ## React 19 Notes
 

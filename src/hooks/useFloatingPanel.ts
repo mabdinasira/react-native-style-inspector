@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Animated, PanResponder } from 'react-native';
-import { FLOATING_PANEL } from '../constants/ui';
+import { FLOATING_PANEL } from '../constants';
 import { getPanelSize } from '../floatingPanel/panelUtils';
 import type { FloatingPanelConfig } from '../floatingPanel/types';
-import { clamp } from '../utils/clamp';
+import { clamp } from '../utils';
 
 /**
  * Core animation/gesture hook for the floating inspector panel.

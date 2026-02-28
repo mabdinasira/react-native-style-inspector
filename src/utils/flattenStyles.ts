@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { type StyleProp, StyleSheet, type ViewStyle } from 'react-native';
 
 export type StyleObject = Record<string, unknown>;
 
@@ -7,5 +7,6 @@ export type StyleObject = Record<string, unknown>;
  */
 export const flattenStyles = (style: unknown): StyleObject | null => {
   if (!style) return null;
-  return StyleSheet.flatten(style as Parameters<typeof StyleSheet.flatten>[0]) as StyleObject;
+  const flat = StyleSheet.flatten(style as StyleProp<ViewStyle>);
+  return (flat ?? null) as StyleObject | null;
 };

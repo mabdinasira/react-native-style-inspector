@@ -1,7 +1,6 @@
 import { useCallback, useMemo } from 'react';
-import { FiberAdapter } from '../fiber/FiberAdapter';
-import type { MeasuredElement } from '../fiber/types';
-import { flattenStyles } from '../utils/flattenStyles';
+import { FiberAdapter, type MeasuredElement } from '../fiber';
+import { flattenStyles } from '../utils';
 
 /**
  * Captures the original flattened style for an element and provides
@@ -13,7 +12,7 @@ import { flattenStyles } from '../utils/flattenStyles';
 export const useStyleMutation = (element: MeasuredElement) => {
   const originalStyle = useMemo(() => {
     const flat = flattenStyles(element.fiber.memoizedProps?.style);
-    return flat ? JSON.parse(JSON.stringify(flat)) : {};
+    return flat ? structuredClone(flat) : {};
   }, [element]);
 
   /** Replace the element's entire style with a flat object. */

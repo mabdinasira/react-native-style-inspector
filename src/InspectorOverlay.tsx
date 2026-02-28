@@ -1,13 +1,10 @@
 import type { ReactNode } from 'react';
 import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { FLOATING_PANEL, Z_INDEX } from './constants/ui';
+import { FLOATING_PANEL, Z_INDEX } from './constants';
 import { ElementHighlighter } from './ElementHighlighter';
-import { FloatingPanel } from './floatingPanel/FloatingPanel';
-import type { PanelState } from './floatingPanel/types';
-import { useDebouncedCallback } from './hooks/useDebouncedCallback';
-import { useLayoutSnapshot } from './hooks/useLayoutSnapshot';
-import { useTapToSelect } from './hooks/useTapToSelect';
+import { FloatingPanel, type PanelState } from './floatingPanel';
+import { useDebouncedCallback, useLayoutSnapshot, useTapToSelect } from './hooks';
 
 export interface StyleInspectorProps {
   /** Only enable in dev mode. Pass `__DEV__` here. */
@@ -50,8 +47,9 @@ export const StyleInspector = ({ enabled = false, children }: StyleInspectorProp
       try {
         await buildSnapshot();
         setIsInspecting(true);
-      } catch {
-        // Snapshot failed (no fiber root, measure errors, etc.) — stay in normal mode
+      } catch (error) {
+        // biome-ignore lint/suspicious/noConsole: dev tool — errors should be visible
+        console.warn('[StyleInspector] Snapshot failed:', error);
       }
     }
   };

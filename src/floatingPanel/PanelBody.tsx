@@ -1,8 +1,8 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { Checkbox } from '../components/Checkbox';
-import type { MeasuredElement } from '../fiber/types';
-import { useStyleOverrides } from '../hooks/useStyleOverrides';
-import { formatValue, isColorProp } from '../utils/styleFormatting';
+import { Checkbox } from '../components';
+import type { MeasuredElement } from '../fiber';
+import { useStyleOverrides } from '../hooks';
+import { formatValue, isColorProp } from '../utils';
 import { EditableValue } from './EditableValue';
 import { PanelFooter } from './PanelFooter';
 

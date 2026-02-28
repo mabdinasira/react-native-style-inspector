@@ -1,4 +1,4 @@
-import type { MeasuredElement } from '../fiber/types';
+import type { MeasuredElement } from '../fiber';
 
 export type PanelState = 'bubble' | 'handle' | 'expanded';
 

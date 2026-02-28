@@ -1,5 +1,4 @@
-import { FiberAdapter } from '../fiber/FiberAdapter';
-import type { FiberNode, MeasuredElement } from '../fiber/types';
+import { FiberAdapter, type FiberNode, type MeasuredElement } from '../fiber';
 
 /**
  * Build a layout snapshot: walk the fiber tree, measure every host fiber,

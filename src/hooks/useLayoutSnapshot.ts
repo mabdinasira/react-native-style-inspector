@@ -1,7 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
-import { FiberAdapter } from '../fiber/FiberAdapter';
-import type { MeasuredElement } from '../fiber/types';
-import { buildLayoutSnapshot } from '../utils/layoutSnapshot';
+import { FiberAdapter, type MeasuredElement } from '../fiber';
+import { buildLayoutSnapshot } from '../utils';
 import { useDebouncedCallback } from './useDebouncedCallback';
 
 /**

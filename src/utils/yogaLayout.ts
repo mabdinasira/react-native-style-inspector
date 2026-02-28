@@ -14,30 +14,30 @@ export const extractBoxModel = (
   style: StyleObject | null,
   measured: { width: number; height: number },
 ): BoxModel => {
-  const num = (key: string): number => {
+  const num = (key: string): number | undefined => {
     const val = style?.[key];
-    return typeof val === 'number' ? val : 0;
+    return typeof val === 'number' ? val : undefined;
   };
 
   const margin = {
-    top: num('marginTop') || num('marginVertical') || num('margin'),
-    right: num('marginRight') || num('marginHorizontal') || num('margin'),
-    bottom: num('marginBottom') || num('marginVertical') || num('margin'),
-    left: num('marginLeft') || num('marginHorizontal') || num('margin'),
+    top: num('marginTop') ?? num('marginVertical') ?? num('margin') ?? 0,
+    right: num('marginRight') ?? num('marginHorizontal') ?? num('margin') ?? 0,
+    bottom: num('marginBottom') ?? num('marginVertical') ?? num('margin') ?? 0,
+    left: num('marginLeft') ?? num('marginHorizontal') ?? num('margin') ?? 0,
   };
 
   const border = {
-    top: num('borderTopWidth') || num('borderWidth'),
-    right: num('borderRightWidth') || num('borderWidth'),
-    bottom: num('borderBottomWidth') || num('borderWidth'),
-    left: num('borderLeftWidth') || num('borderWidth'),
+    top: num('borderTopWidth') ?? num('borderWidth') ?? 0,
+    right: num('borderRightWidth') ?? num('borderWidth') ?? 0,
+    bottom: num('borderBottomWidth') ?? num('borderWidth') ?? 0,
+    left: num('borderLeftWidth') ?? num('borderWidth') ?? 0,
   };
 
   const padding = {
-    top: num('paddingTop') || num('paddingVertical') || num('padding'),
-    right: num('paddingRight') || num('paddingHorizontal') || num('padding'),
-    bottom: num('paddingBottom') || num('paddingVertical') || num('padding'),
-    left: num('paddingLeft') || num('paddingHorizontal') || num('padding'),
+    top: num('paddingTop') ?? num('paddingVertical') ?? num('padding') ?? 0,
+    right: num('paddingRight') ?? num('paddingHorizontal') ?? num('padding') ?? 0,
+    bottom: num('paddingBottom') ?? num('paddingVertical') ?? num('padding') ?? 0,
+    left: num('paddingLeft') ?? num('paddingHorizontal') ?? num('padding') ?? 0,
   };
 
   const content = {

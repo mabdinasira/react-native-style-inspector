@@ -1,7 +1,8 @@
 import { StyleSheet, Text, View } from 'react-native';
+import { MONOSPACE_FONT } from '../constants';
 import { ElementCycler } from '../ElementCycler';
-import type { MeasuredElement } from '../fiber/types';
-import { formatSourceLocation, getOwnerName, getSourceLocation } from '../utils/sourceMapping';
+import type { MeasuredElement } from '../fiber';
+import { formatSourceLocation, getOwnerName, getSourceLocation } from '../utils';
 import { CloseButton } from './CloseButton';
 
 interface PanelHeaderProps {
@@ -92,7 +93,7 @@ const styles = StyleSheet.create({
     color: '#E06C75',
     fontSize: 14,
     fontWeight: '600',
-    fontFamily: 'Menlo',
+    fontFamily: MONOSPACE_FONT,
     flexShrink: 1,
   },
   controls: {
@@ -105,6 +106,6 @@ const styles = StyleSheet.create({
     color: '#888',
     fontSize: 11,
     marginTop: 4,
-    fontFamily: 'Menlo',
+    fontFamily: MONOSPACE_FONT,
   },
 });

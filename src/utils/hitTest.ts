@@ -1,4 +1,4 @@
-import type { MeasuredElement } from '../fiber/types';
+import type { MeasuredElement } from '../fiber';
 
 /**
  * Given a tap point and a layout snapshot, return all elements

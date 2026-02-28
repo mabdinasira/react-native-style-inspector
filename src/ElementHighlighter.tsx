@@ -1,9 +1,7 @@
 import { StyleSheet, View } from 'react-native';
-import { BOX_MODEL_COLORS } from './constants/colors';
-import { Z_INDEX } from './constants/ui';
-import { FiberAdapter } from './fiber/FiberAdapter';
-import type { MeasuredElement } from './fiber/types';
-import { extractBoxModel } from './utils/yogaLayout';
+import { BOX_MODEL_COLORS, Z_INDEX } from './constants';
+import { FiberAdapter, type MeasuredElement } from './fiber';
+import { extractBoxModel } from './utils';
 
 interface ElementHighlighterProps {
   element: MeasuredElement | null;

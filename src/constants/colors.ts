@@ -10,3 +10,9 @@ export const BOX_MODEL_COLORS = {
   contentLabel: '#4A90D9',
   outline: '#4FC3F7',
 } as const;
+
+/** VS Code-style syntax colors for the editable style property list */
+export const EDITABLE_VALUE_COLORS = {
+  key: { text: '#9CDCFE', underline: 'rgba(156, 220, 254, 0.4)' },
+  value: { text: '#CE9178', underline: 'rgba(206, 145, 120, 0.4)' },
+} as const;

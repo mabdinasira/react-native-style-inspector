@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import type { GestureResponderEvent } from 'react-native';
-import type { MeasuredElement } from '../fiber/types';
-import { hitTest } from '../utils/hitTest';
+import type { MeasuredElement } from '../fiber';
+import { hitTest } from '../utils';
 
 interface TapToSelectState {
   /** All overlapping elements at the tap point, sorted by area (smallest first) */
@@ -40,6 +40,7 @@ export const useTapToSelect = (snapshot: MeasuredElement[]) => {
 
   const cycleNext = useCallback(() => {
     setState((prev) => {
+      if (prev.matches.length === 0) return prev;
       const nextIndex = (prev.selectedIndex + 1) % prev.matches.length;
       return {
         ...prev,
@@ -51,6 +52,7 @@ export const useTapToSelect = (snapshot: MeasuredElement[]) => {
 
   const cyclePrevious = useCallback(() => {
     setState((prev) => {
+      if (prev.matches.length === 0) return prev;
       const prevIndex = (prev.selectedIndex - 1 + prev.matches.length) % prev.matches.length;
       return {
         ...prev,

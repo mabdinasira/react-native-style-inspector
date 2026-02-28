@@ -1,3 +1,8 @@
+import { Platform } from 'react-native';
+
+/** Cross-platform monospace font family */
+export const MONOSPACE_FONT = Platform.select({ ios: 'Menlo', default: 'monospace' });
+
 /** Z-index layering for inspector UI elements */
 export const Z_INDEX = {
   HIGHLIGHT: 9997,
@@ -24,4 +29,23 @@ export const FLOATING_PANEL = {
   SNAP_TENSION: 40,
   EXPAND_DURATION: 250,
   HIGHLIGHT_FLASH_MS: 1500,
+} as const;
+
+/** Validation constraints for editable style values */
+export const EDITABLE_VALUE = {
+  VALID_STYLE_KEY: /^[a-zA-Z][a-zA-Z0-9]*$/,
+  MAX_VALUE_LENGTH: 200,
+} as const;
+
+/** InspectorBubble sizing and animation trail config */
+export const INSPECTOR_BUBBLE = {
+  SIZE: 48,
+  SWEEP_WIDTH: 2.5,
+  CENTER_DOT_SIZE: 8,
+  TRAIL_ARMS: [
+    { key: 'sweep', offsetDeg: 0, opacity: 0.9 },
+    { key: 'trail-1', offsetDeg: -18, opacity: 0.45 },
+    { key: 'trail-2', offsetDeg: -36, opacity: 0.3 },
+    { key: 'trail-3', offsetDeg: -54, opacity: 0.2 },
+  ],
 } as const;

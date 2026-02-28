@@ -1,7 +1,6 @@
-import { MEASURE_TIMEOUT_MS } from '../constants/ui';
+import { MEASURE_TIMEOUT_MS } from '../constants';
 import { flattenStyles } from '../utils/flattenStyles';
-import type { FiberNode } from './types';
-import { HOST_COMPONENT_TAG } from './types';
+import { type FiberNode, HOST_COMPONENT_TAG } from './types';
 
 /**
  * Unified API for all fiber tree access.
@@ -12,7 +11,7 @@ export const FiberAdapter = {
    * Get the fiber root from the React DevTools global hook.
    * Returns null if the hook is not available (production build).
    */
-  getFiberRoot(): FiberNode | null {
+  getFiberRoot: (): FiberNode | null => {
     const hook = (globalThis as Record<string, unknown>).__REACT_DEVTOOLS_GLOBAL_HOOK__ as
       | {
           renderers?: Map<number, unknown>;
@@ -38,18 +37,19 @@ export const FiberAdapter = {
    * Walk the fiber tree and collect all host component fibers with their depth.
    * Depth is needed later for z-ordering in the layout snapshot.
    */
-  walkHostFibers(root: FiberNode): Array<{ fiber: FiberNode; depth: number }> {
+  walkHostFibers: (root: FiberNode): Array<{ fiber: FiberNode; depth: number }> => {
     const hostFibers: Array<{ fiber: FiberNode; depth: number }> = [];
 
     const walk = (fiber: FiberNode | null, depth: number) => {
-      if (!fiber) return;
+      let current = fiber;
+      while (current) {
+        if (current.tag === HOST_COMPONENT_TAG) {
+          hostFibers.push({ fiber: current, depth });
+        }
 
-      if (fiber.tag === HOST_COMPONENT_TAG) {
-        hostFibers.push({ fiber, depth });
+        walk(current.child, depth + 1);
+        current = current.sibling;
       }
-
-      walk(fiber.child, depth + 1);
-      walk(fiber.sibling, depth);
     };
 
     walk(root.child, 0);
@@ -59,21 +59,21 @@ export const FiberAdapter = {
   /**
    * Get the flattened style object from a fiber's props.
    */
-  getStyle(fiber: FiberNode): Record<string, unknown> | null {
+  getStyle: (fiber: FiberNode): Record<string, unknown> | null => {
     return flattenStyles(fiber.memoizedProps?.style);
   },
 
   /**
    * Get the source file location from a fiber's debug info.
    */
-  getSource(fiber: FiberNode): { fileName: string; lineNumber: number } | null {
+  getSource: (fiber: FiberNode): { fileName: string; lineNumber: number } | null => {
     return fiber._debugSource ?? null;
   },
 
   /**
    * Get the display name of the component.
    */
-  getComponentName(fiber: FiberNode): string {
+  getComponentName: (fiber: FiberNode): string => {
     if (typeof fiber.type === 'string') return fiber.type;
     if (typeof fiber.type === 'function')
       return fiber.type.displayName ?? fiber.type.name ?? 'Unknown';
@@ -84,7 +84,7 @@ export const FiberAdapter = {
    * Measure a fiber's native view on screen.
    * Returns a promise with { x, y, width, height }.
    */
-  measure(fiber: FiberNode): Promise<{ x: number; y: number; width: number; height: number }> {
+  measure: (fiber: FiberNode): Promise<{ x: number; y: number; width: number; height: number }> => {
     type MeasureCallback = (
       x: number,
       y: number,
@@ -129,7 +129,7 @@ export const FiberAdapter = {
    * Caller is responsible for building the final style object.
    * Works on both old arch and Fabric.
    */
-  setStyle(fiber: FiberNode, style: unknown): boolean {
+  setStyle: (fiber: FiberNode, style: unknown): boolean => {
     const hook = (globalThis as Record<string, unknown>).__REACT_DEVTOOLS_GLOBAL_HOOK__ as
       | {
           renderers?: Map<

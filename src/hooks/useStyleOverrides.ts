@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import type { MeasuredElement } from '../fiber/types';
+import type { MeasuredElement } from '../fiber';
 import { useStyleMutation } from './useStyleMutation';
 
 /**
@@ -69,6 +69,13 @@ export const useStyleOverrides = (element: MeasuredElement) => {
   const handleKeyChange = (originalKey: string, newKey: string) => {
     const currentRenamedKey = keyRenamesRef.current[originalKey] ?? originalKey;
     if (newKey === currentRenamedKey) return;
+
+    // Reject if newKey collides with another active key
+    for (const key of Object.keys(originalStyle)) {
+      if (key === originalKey) continue;
+      const activeKey = keyRenamesRef.current[key] ?? key;
+      if (activeKey === newKey) return;
+    }
 
     const nextRenames = { ...keyRenamesRef.current };
     const nextOverrides = { ...overridesRef.current };

@@ -1,4 +1,4 @@
-import type { FiberNode } from '../fiber/types';
+import type { FiberNode } from '../fiber';
 
 export interface SourceLocation {
   fileName: string;

@@ -1,5 +1,7 @@
 import { useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput } from 'react-native';
+import { EDITABLE_VALUE, EDITABLE_VALUE_COLORS, MONOSPACE_FONT } from '../constants';
+import { parseInput, toEditableString } from '../utils';
 
 interface EditableValueProps {
   value: unknown;
@@ -9,48 +11,6 @@ interface EditableValueProps {
   disabled?: boolean;
 }
 
-const VALID_STYLE_KEY = /^[a-zA-Z][a-zA-Z0-9]*$/;
-const MAX_VALUE_LENGTH = 200;
-
-/** Parses user input back to the appropriate type. */
-const parseInput = (text: string, originalValue: unknown): unknown => {
-  const trimmed = text.trim();
-  if (trimmed === '') return originalValue;
-
-  // Strip surrounding quotes if the user typed them
-  if (
-    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
-    (trimmed.startsWith("'") && trimmed.endsWith("'"))
-  ) {
-    return trimmed.slice(1, -1);
-  }
-
-  // Only coerce to number when the original was numeric
-  if (typeof originalValue === 'number') {
-    const asNumber = Number(trimmed);
-    if (!Number.isNaN(asNumber)) return asNumber;
-  }
-
-  // Boolean
-  if (trimmed === 'true') return true;
-  if (trimmed === 'false') return false;
-
-  // Everything else is a string (e.g. color names, hex codes)
-  return trimmed;
-};
-
-/** Raw value → editable string (no quotes around strings). */
-const toEditableString = (value: unknown): string => {
-  if (value === undefined) return '';
-  if (value === null) return '';
-  return String(value);
-};
-
-const variantColors = {
-  key: { text: '#9CDCFE', underline: 'rgba(156, 220, 254, 0.4)' },
-  value: { text: '#CE9178', underline: 'rgba(206, 145, 120, 0.4)' },
-};
-
 /** Tappable style value that becomes an inline TextInput on press. */
 export const EditableValue = ({
   value,
@@ -59,10 +19,10 @@ export const EditableValue = ({
   variant,
   disabled,
 }: EditableValueProps) => {
-  const colors = variantColors[variant];
+  const colors = EDITABLE_VALUE_COLORS[variant];
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
-  const inputRef = useRef<TextInput>(null);
+  const [invalid, setInvalid] = useState(false);
   const committedRef = useRef(false);
 
   const startEditing = () => {
@@ -70,8 +30,6 @@ export const EditableValue = ({
     committedRef.current = false;
     setDraft(toEditableString(value));
     setEditing(true);
-    // Focus after the TextInput mounts
-    setTimeout(() => inputRef.current?.focus(), 50);
   };
 
   const commitEdit = () => {
@@ -83,9 +41,14 @@ export const EditableValue = ({
     const changed = trimmed !== '' && trimmed !== toEditableString(value);
 
     if (changed) {
-      // Validate key names and cap value length
-      if (variant === 'key' && !VALID_STYLE_KEY.test(trimmed)) return;
-      if (trimmed.length > MAX_VALUE_LENGTH) return;
+      const isInvalidKey = variant === 'key' && !EDITABLE_VALUE.VALID_STYLE_KEY.test(trimmed);
+      const isTooLong = trimmed.length > EDITABLE_VALUE.MAX_VALUE_LENGTH;
+
+      if (isInvalidKey || isTooLong) {
+        setInvalid(true);
+        setTimeout(() => setEditing(false), 300);
+        return;
+      }
 
       const parsed = parseInput(trimmed, value);
       onSubmit(parsed);
@@ -97,14 +60,18 @@ export const EditableValue = ({
   if (editing) {
     return (
       <TextInput
-        ref={inputRef}
-        style={[styles.base, styles.editing, { color: colors.text, borderColor: colors.underline }]}
+        style={[
+          styles.base,
+          styles.editing,
+          { color: colors.text, borderColor: invalid ? '#f44' : colors.underline },
+        ]}
         value={draft}
         onChangeText={setDraft}
         onSubmitEditing={commitEdit}
         onBlur={commitEdit}
         autoCapitalize='none'
         autoCorrect={false}
+        autoFocus
         selectTextOnFocus
         returnKeyType='done'
       />
@@ -123,7 +90,7 @@ export const EditableValue = ({
 const styles = StyleSheet.create({
   base: {
     fontSize: 13,
-    fontFamily: 'Menlo',
+    fontFamily: MONOSPACE_FONT,
     padding: 0,
     margin: 0,
     minWidth: 20,

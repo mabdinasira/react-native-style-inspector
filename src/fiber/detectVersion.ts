@@ -9,9 +9,11 @@ export const detectReactVersion = (): { major: number; minor: number } | null =>
 
   if (!hook?.renderers) return null;
 
-  const renderer = hook.renderers.get(1);
-  if (!renderer?.version) return null;
+  for (const renderer of hook.renderers.values()) {
+    if (!renderer?.version) continue;
+    const [major, minor] = renderer.version.split('.').map(Number);
+    return { major: major ?? 0, minor: minor ?? 0 };
+  }
 
-  const [major, minor] = renderer.version.split('.').map(Number);
-  return { major: major ?? 0, minor: minor ?? 0 };
+  return null;
 };

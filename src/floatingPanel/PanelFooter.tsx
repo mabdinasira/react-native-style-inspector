@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
+import { MONOSPACE_FONT } from '../constants';
 
 interface PanelFooterProps {
   propertyCount: number;
@@ -30,6 +31,6 @@ const styles = StyleSheet.create({
   footerText: {
     color: '#666',
     fontSize: 11,
-    fontFamily: 'Menlo',
+    fontFamily: MONOSPACE_FONT,
   },
 });
