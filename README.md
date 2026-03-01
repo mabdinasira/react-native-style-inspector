@@ -4,6 +4,14 @@ On-device element inspector for React Native. The "Inspect Element" experience f
 
 Tap any element in your app to see its styles, edit them live, toggle properties on and off, and add new ones - all from a draggable floating panel. Zero external dependencies, pure React Native.
 
+<p align="center">
+  <img src="assets/screenshot.png" alt="Inspecting nested styles" width="270" />
+  &nbsp;&nbsp;
+  <img src="assets/screenshot-add-property.png" alt="Adding a new property" width="270" />
+  &nbsp;&nbsp;
+  <img src="assets/screenshot-edit.png" alt="Editing a value inline" width="270" />
+</p>
+
 ## Features
 
 - **Tap to select** - tap any element to inspect it. Overlapping elements are sorted smallest-first so you always get the one you meant
