@@ -32,20 +32,23 @@ const App = () => {
           <SafeAreaView style={styles.content}>
             <ActiveComponent />
           </SafeAreaView>
-          <View style={styles.tabBar}>
-            {SCREENS.map((screen) => (
-              <TouchableOpacity
-                key={screen.key}
-                style={[styles.tab, activeScreen === screen.key && styles.tabActive]}
-                onPress={() => setActiveScreen(screen.key)}
-              >
-                <Text style={[styles.tabText, activeScreen === screen.key && styles.tabTextActive]}>
-                  {screen.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-            <SafeAreaView edges={['bottom']} />
-          </View>
+          <SafeAreaView edges={['bottom']} style={styles.tabBarContainer}>
+            <View style={styles.tabBar}>
+              {SCREENS.map((screen) => (
+                <TouchableOpacity
+                  key={screen.key}
+                  style={[styles.tab, activeScreen === screen.key && styles.tabActive]}
+                  onPress={() => setActiveScreen(screen.key)}
+                >
+                  <Text
+                    style={[styles.tabText, activeScreen === screen.key && styles.tabTextActive]}
+                  >
+                    {screen.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </SafeAreaView>
         </View>
       </ElementInspector>
     </SafeAreaProvider>
@@ -62,11 +65,13 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  tabBar: {
-    flexDirection: 'row',
+  tabBarContainer: {
     backgroundColor: '#16213E',
     borderTopWidth: 1,
     borderTopColor: '#0F3460',
+  },
+  tabBar: {
+    flexDirection: 'row',
   },
   tab: {
     flex: 1,
