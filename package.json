@@ -2,18 +2,33 @@
   "name": "react-native-element-inspector",
   "version": "0.1.0",
   "description": "On-device element inspector for React Native — the Inspect Element experience for mobile.",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "main": "lib/index.js",
+  "module": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "source": "src/index.ts",
   "files": [
     "src",
-    "lib"
+    "lib",
+    "!**/__tests__",
+    "!**/__mocks__",
+    "!**/*.test.*"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mabdinasira/react-native-element-inspector.git"
+  },
+  "homepage": "https://github.com/mabdinasira/react-native-element-inspector#readme",
+  "bugs": {
+    "url": "https://github.com/mabdinasira/react-native-element-inspector/issues"
+  },
+  "author": "Mohamed Abdinasir",
   "scripts": {
     "lint": "biome lint --write .",
     "fmt": "biome format --write .",
     "check": "biome check --write . --unsafe",
     "typecheck": "tsc --noEmit",
     "build": "tsc --project tsconfig.build.json",
+    "prepublishOnly": "rm -rf lib && bun run build",
     "fixall": "biome check --write . --unsafe && tsc --noEmit",
     "clean": "rm -rf node_modules lib && bun install",
     "test": "jest",

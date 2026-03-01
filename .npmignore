@@ -1,0 +1,28 @@
+# Source & config
+tsconfig*.json
+biome.json
+babel.config.js
+jest.config.js
+.gitignore
+CLAUDE.md
+TODO.md
+PUBLISHING.md
+react-native-element-inspector-spec.md
+
+# Example app
+example/
+
+# Tests
+**/__tests__/
+**/*.test.*
+coverage/
+
+# Dev files
+.github/
+.vscode/
+.idea/
+assets/
+bun.lock
+
+# OS
+.DS_Store
