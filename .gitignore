@@ -31,5 +31,8 @@ yarn-error.*
 # bun
 bun.lockb
 
+# personal notes
+TODO.md
+
 # misc
 *.log

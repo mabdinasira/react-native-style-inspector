@@ -236,7 +236,17 @@
       "lineEnding": "lf",
       "lineWidth": 100
     },
-    "globals": ["React", "JSX", "__DEV__"]
+    "globals": [
+      "React",
+      "JSX",
+      "__DEV__",
+      "jest",
+      "describe",
+      "it",
+      "expect",
+      "beforeEach",
+      "afterEach"
+    ]
   },
   "json": {
     "formatter": {
@@ -254,7 +264,7 @@
   },
   "overrides": [
     {
-      "includes": ["*.test.ts", "*.test.tsx", "*.spec.ts", "*.spec.tsx"],
+      "includes": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
       "linter": {
         "rules": {
           "suspicious": {
