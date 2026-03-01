@@ -38,6 +38,21 @@ export const BasicLayoutScreen = () => {
           Inline styles (no StyleSheet)
         </Text>
       </View>
+
+      <View style={styles.transformCard}>
+        <Text style={styles.transformLabel}>Transform test</Text>
+        <View style={styles.transformRow}>
+          <View style={styles.rotatedBox}>
+            <Text style={styles.boxText}>Rotate</Text>
+          </View>
+          <View style={styles.scaledBox}>
+            <Text style={styles.boxText}>Scale</Text>
+          </View>
+          <View style={styles.skewedBox}>
+            <Text style={styles.boxText}>Multi</Text>
+          </View>
+        </View>
+      </View>
     </View>
   );
 };
@@ -113,5 +128,50 @@ const styles = StyleSheet.create({
     padding: 12,
     backgroundColor: '#16213E',
     borderRadius: 8,
+  },
+  transformCard: {
+    backgroundColor: '#16213E',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: '#0F3460',
+  },
+  transformLabel: {
+    fontSize: 14,
+    color: '#888',
+    marginBottom: 12,
+  },
+  transformRow: {
+    flexDirection: 'row',
+    gap: 12,
+    justifyContent: 'center',
+  },
+  rotatedBox: {
+    width: 70,
+    height: 70,
+    borderRadius: 8,
+    backgroundColor: '#C678DD',
+    justifyContent: 'center',
+    alignItems: 'center',
+    transform: [{ rotate: '15deg' }],
+  },
+  scaledBox: {
+    width: 70,
+    height: 70,
+    borderRadius: 8,
+    backgroundColor: '#E5C07B',
+    justifyContent: 'center',
+    alignItems: 'center',
+    transform: [{ scale: 0.85 }],
+  },
+  skewedBox: {
+    width: 70,
+    height: 70,
+    borderRadius: 8,
+    backgroundColor: '#56B6C2',
+    justifyContent: 'center',
+    alignItems: 'center',
+    transform: [{ rotate: '-5deg' }, { scale: 1.1 }, { perspective: 800 }],
   },
 });

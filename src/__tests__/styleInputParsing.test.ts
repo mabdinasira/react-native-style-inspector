@@ -36,6 +36,19 @@ describe('parseInput', () => {
     expect(parseInput('false', 'anything')).toBe(false);
   });
 
+  it('parses JSON arrays (e.g. transform)', () => {
+    const transform = [{ scale: 1 }, { perspective: 1000 }];
+    expect(parseInput('[{"scale":1},{"perspective":1000}]', transform)).toEqual(transform);
+  });
+
+  it('parses JSON objects', () => {
+    expect(parseInput('{"flex":1}', {})).toEqual({ flex: 1 });
+  });
+
+  it('returns string for invalid JSON starting with [ or {', () => {
+    expect(parseInput('[not json', 'original')).toBe('[not json');
+  });
+
   it('returns trimmed string for everything else', () => {
     expect(parseInput('  #FF0000  ', '#000')).toBe('#FF0000');
     expect(parseInput('bold', 'normal')).toBe('bold');
@@ -62,5 +75,14 @@ describe('toEditableString', () => {
   it('converts boolean to string', () => {
     expect(toEditableString(true)).toBe('true');
     expect(toEditableString(false)).toBe('false');
+  });
+
+  it('JSON-stringifies arrays', () => {
+    const transform = [{ scale: 1 }, { rotateY: '0deg' }];
+    expect(toEditableString(transform)).toBe('[{"scale":1},{"rotateY":"0deg"}]');
+  });
+
+  it('JSON-stringifies objects', () => {
+    expect(toEditableString({ flex: 1 })).toBe('{"flex":1}');
   });
 });

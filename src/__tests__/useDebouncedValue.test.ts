@@ -20,7 +20,7 @@ describe('useDebouncedValue', () => {
     const { result, rerender } = renderHook(() => useDebouncedValue(value, 300));
 
     value = 'world';
-    rerender();
+    rerender({});
     act(() => {
       jest.advanceTimersByTime(100);
     });
@@ -32,7 +32,7 @@ describe('useDebouncedValue', () => {
     const { result, rerender } = renderHook(() => useDebouncedValue(value, 300));
 
     value = 'world';
-    rerender();
+    rerender({});
     act(() => {
       jest.advanceTimersByTime(300);
     });
@@ -44,13 +44,13 @@ describe('useDebouncedValue', () => {
     const { result, rerender } = renderHook(() => useDebouncedValue(value, 300));
 
     value = 'b';
-    rerender();
+    rerender({});
     act(() => {
       jest.advanceTimersByTime(200);
     });
 
     value = 'c';
-    rerender();
+    rerender({});
     act(() => {
       jest.advanceTimersByTime(200);
     });

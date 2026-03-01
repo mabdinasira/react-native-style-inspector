@@ -74,9 +74,13 @@ export const FiberAdapter = {
    * Get the display name of the component.
    */
   getComponentName: (fiber: FiberNode): string => {
-    if (typeof fiber.type === 'string') return fiber.type;
+    if (typeof fiber.type === 'string') {
+      // Strip RCT prefix from native host types (RCTView → View, RCTText → Text)
+      if (fiber.type.startsWith('RCT')) return fiber.type.slice(3);
+      return fiber.type;
+    }
     if (typeof fiber.type === 'function')
-      return fiber.type.displayName ?? fiber.type.name ?? 'Unknown';
+      return fiber.type.displayName || fiber.type.name || 'Unknown';
     return 'Unknown';
   },
 

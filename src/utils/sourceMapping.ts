@@ -40,6 +40,15 @@ export const formatSourceLocation = (source: SourceLocation): string => {
   return `${fileName}:${source.lineNumber}`;
 };
 
+/** Names of RN host wrappers and interop layers that should be skipped when resolving owner. */
+const SKIP_NAMES = new Set(['View', 'Text', 'ScrollView', 'Image', 'TextInput']);
+const SKIP_PREFIXES = ['CssInterop.', 'NativeWind.', 'RCT'];
+
+const isInternalWrapper = (name: string): boolean => {
+  if (SKIP_NAMES.has(name)) return true;
+  return SKIP_PREFIXES.some((prefix) => name.startsWith(prefix));
+};
+
 /**
  * Get the name of the nearest user component that owns this fiber.
  * React 19 dropped _debugSource, so we use _debugOwner to find the
@@ -56,8 +65,7 @@ export const getOwnerName = (fiber: FiberNode): string | null => {
     const ownerType = owner.type;
     if (typeof ownerType === 'function') {
       const name = ownerType.displayName ?? ownerType.name;
-      // Skip generic RN host wrappers
-      if (name && name !== 'View' && name !== 'Text' && name !== 'ScrollView') {
+      if (name && !isInternalWrapper(name)) {
         return `in ${name}`;
       }
     }

@@ -21,6 +21,15 @@ export const parseInput = (text: string, originalValue: unknown): unknown => {
   if (trimmed === 'true') return true;
   if (trimmed === 'false') return false;
 
+  // JSON arrays/objects (e.g. transform: [{scale: 1}, ...])
+  if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
+    try {
+      return JSON.parse(trimmed);
+    } catch (_syntaxError) {
+      return trimmed;
+    }
+  }
+
   // Everything else is a string (e.g. color names, hex codes)
   return trimmed;
 };
@@ -29,5 +38,6 @@ export const parseInput = (text: string, originalValue: unknown): unknown => {
 export const toEditableString = (value: unknown): string => {
   if (value === undefined) return '';
   if (value === null) return '';
+  if (typeof value === 'object') return JSON.stringify(value);
   return String(value);
 };

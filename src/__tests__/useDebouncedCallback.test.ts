@@ -64,7 +64,7 @@ describe('useDebouncedCallback', () => {
   it('returns a stable function reference', () => {
     const { result, rerender } = renderHook(() => useDebouncedCallback(jest.fn(), 300));
     const firstRef = result.current;
-    rerender();
+    rerender({});
     expect(result.current).toBe(firstRef);
   });
 });
