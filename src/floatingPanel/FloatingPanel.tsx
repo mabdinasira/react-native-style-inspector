@@ -70,9 +70,12 @@ export const FloatingPanel = ({
         )}
       </View>
 
-      {/* Expandable body — animated height/opacity */}
-      {panelState === 'expanded' && selected && (
-        <Animated.View style={[styles.body, { height: bodyHeight, opacity: bodyOpacity }]}>
+      {/* Expandable body — always mounted when selected so added-property state survives collapse */}
+      {selected && (
+        <Animated.View
+          style={[styles.body, { height: bodyHeight, opacity: bodyOpacity }]}
+          pointerEvents={panelState === 'expanded' ? 'auto' : 'none'}
+        >
           <PanelBody element={selected} />
         </Animated.View>
       )}

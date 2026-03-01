@@ -1,21 +1,25 @@
 import { useRef, useState } from 'react';
+import { EDITABLE_VALUE } from '../constants';
 import type { MeasuredElement } from '../fiber';
 import { useStyleMutation } from './useStyleMutation';
 
 /**
- * Manages style overrides, key renames, and property toggling for a selected element.
- * Builds the final style object and applies it to the fiber on every change.
+ * Manages style overrides, key renames, property toggling, and added properties
+ * for a selected element. Builds the final style object and applies it to the fiber
+ * on every change.
  */
 export const useStyleOverrides = (element: MeasuredElement) => {
   const { originalStyle, applyStyle } = useStyleMutation(element);
   const [overrides, setOverrides] = useState<Record<string, unknown>>({});
   const [disabledKeys, setDisabledKeys] = useState<Set<string>>(new Set());
   const [keyRenames, setKeyRenames] = useState<Record<string, string>>({});
+  const [addedProperties, setAddedProperties] = useState<Record<string, unknown>>({});
 
   // Refs mirror state so handlers always read the latest values (no stale closures)
   const overridesRef = useRef(overrides);
   const disabledRef = useRef(disabledKeys);
   const keyRenamesRef = useRef(keyRenames);
+  const addedRef = useRef(addedProperties);
   const prevElementRef = useRef(element);
 
   // Reset when element changes (render-phase setState — React's recommended
@@ -25,16 +29,30 @@ export const useStyleOverrides = (element: MeasuredElement) => {
     overridesRef.current = {};
     disabledRef.current = new Set();
     keyRenamesRef.current = {};
+    addedRef.current = {};
     setOverrides({});
     setDisabledKeys(new Set());
     setKeyRenames({});
+    setAddedProperties({});
   }
 
-  // Build a flat style from original + overrides − disabled + renames, then apply
+  /** Check if a key collides with any active key (original, renamed, or added). */
+  const isKeyTaken = (key: string, excludeOriginalKey?: string): boolean => {
+    for (const originalKey of Object.keys(originalStyle)) {
+      if (originalKey === excludeOriginalKey) continue;
+      const activeKey = keyRenamesRef.current[originalKey] ?? originalKey;
+      if (activeKey === key) return true;
+    }
+    if (key in addedRef.current) return true;
+    return false;
+  };
+
+  // Build a flat style from original + overrides − disabled + renames + added, then apply
   const buildAndApply = (
     nextOverrides: Record<string, unknown>,
     nextDisabled: Set<string>,
     nextRenames: Record<string, string>,
+    nextAdded: Record<string, unknown>,
   ) => {
     const style: Record<string, unknown> = {};
     for (const [originalKey, originalValue] of Object.entries(originalStyle)) {
@@ -42,6 +60,9 @@ export const useStyleOverrides = (element: MeasuredElement) => {
       const activeKey = nextRenames[originalKey] ?? originalKey;
       const value = activeKey in nextOverrides ? nextOverrides[activeKey] : originalValue;
       style[activeKey] = value;
+    }
+    for (const [key, value] of Object.entries(nextAdded)) {
+      style[key] = value;
     }
     applyStyle(style);
   };
@@ -54,7 +75,7 @@ export const useStyleOverrides = (element: MeasuredElement) => {
       nextDisabled.add(key);
     }
     disabledRef.current = nextDisabled;
-    buildAndApply(overridesRef.current, nextDisabled, keyRenamesRef.current);
+    buildAndApply(overridesRef.current, nextDisabled, keyRenamesRef.current, addedRef.current);
     setDisabledKeys(nextDisabled);
   };
 
@@ -62,20 +83,14 @@ export const useStyleOverrides = (element: MeasuredElement) => {
     const activeKey = keyRenamesRef.current[originalKey] ?? originalKey;
     const nextOverrides = { ...overridesRef.current, [activeKey]: newValue };
     overridesRef.current = nextOverrides;
-    buildAndApply(nextOverrides, disabledRef.current, keyRenamesRef.current);
+    buildAndApply(nextOverrides, disabledRef.current, keyRenamesRef.current, addedRef.current);
     setOverrides(nextOverrides);
   };
 
   const handleKeyChange = (originalKey: string, newKey: string) => {
     const currentRenamedKey = keyRenamesRef.current[originalKey] ?? originalKey;
     if (newKey === currentRenamedKey) return;
-
-    // Reject if newKey collides with another active key
-    for (const key of Object.keys(originalStyle)) {
-      if (key === originalKey) continue;
-      const activeKey = keyRenamesRef.current[key] ?? key;
-      if (activeKey === newKey) return;
-    }
+    if (isKeyTaken(newKey, originalKey)) return;
 
     const nextRenames = { ...keyRenamesRef.current };
     const nextOverrides = { ...overridesRef.current };
@@ -92,9 +107,49 @@ export const useStyleOverrides = (element: MeasuredElement) => {
 
     overridesRef.current = nextOverrides;
     keyRenamesRef.current = nextRenames;
-    buildAndApply(nextOverrides, disabledRef.current, nextRenames);
+    buildAndApply(nextOverrides, disabledRef.current, nextRenames, addedRef.current);
     setOverrides(nextOverrides);
     setKeyRenames(nextRenames);
+  };
+
+  const handleAddProperty = (key: string, value: unknown) => {
+    const trimmed = key.trim();
+    if (!EDITABLE_VALUE.VALID_STYLE_KEY.test(trimmed)) return;
+    if (isKeyTaken(trimmed)) return;
+
+    const nextAdded = { ...addedRef.current, [trimmed]: value };
+    addedRef.current = nextAdded;
+    buildAndApply(overridesRef.current, disabledRef.current, keyRenamesRef.current, nextAdded);
+    setAddedProperties(nextAdded);
+  };
+
+  const handleAddedValueChange = (key: string, newValue: unknown) => {
+    const nextAdded = { ...addedRef.current, [key]: newValue };
+    addedRef.current = nextAdded;
+    buildAndApply(overridesRef.current, disabledRef.current, keyRenamesRef.current, nextAdded);
+    setAddedProperties(nextAdded);
+  };
+
+  const handleAddedKeyChange = (oldKey: string, newKey: string) => {
+    const trimmed = newKey.trim();
+    if (!trimmed || trimmed === oldKey) return;
+    if (!EDITABLE_VALUE.VALID_STYLE_KEY.test(trimmed)) return;
+    if (isKeyTaken(trimmed)) return;
+
+    const nextAdded = { ...addedRef.current };
+    nextAdded[trimmed] = nextAdded[oldKey];
+    delete nextAdded[oldKey];
+    addedRef.current = nextAdded;
+    buildAndApply(overridesRef.current, disabledRef.current, keyRenamesRef.current, nextAdded);
+    setAddedProperties(nextAdded);
+  };
+
+  const handleRemoveProperty = (key: string) => {
+    const nextAdded = { ...addedRef.current };
+    delete nextAdded[key];
+    addedRef.current = nextAdded;
+    buildAndApply(overridesRef.current, disabledRef.current, keyRenamesRef.current, nextAdded);
+    setAddedProperties(nextAdded);
   };
 
   /** Resolve the active key and display value for an original style entry. */
@@ -108,9 +163,14 @@ export const useStyleOverrides = (element: MeasuredElement) => {
   return {
     originalStyle,
     entries: Object.entries(originalStyle),
+    addedEntries: Object.entries(addedProperties),
     resolveEntry,
     handleToggle,
     handleValueChange,
     handleKeyChange,
+    handleAddProperty,
+    handleAddedValueChange,
+    handleAddedKeyChange,
+    handleRemoveProperty,
   };
 };

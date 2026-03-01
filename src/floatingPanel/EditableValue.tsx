@@ -9,6 +9,7 @@ interface EditableValueProps {
   onSubmit: (parsed: unknown) => void;
   variant: 'key' | 'value';
   disabled?: boolean;
+  initialEditing?: boolean;
 }
 
 /** Tappable style value that becomes an inline TextInput on press. */
@@ -18,9 +19,10 @@ export const EditableValue = ({
   onSubmit,
   variant,
   disabled,
+  initialEditing = false,
 }: EditableValueProps) => {
   const colors = EDITABLE_VALUE_COLORS[variant];
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(initialEditing);
   const [draft, setDraft] = useState('');
   const [invalid, setInvalid] = useState(false);
   const committedRef = useRef(false);

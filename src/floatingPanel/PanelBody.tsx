@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Checkbox } from '../components';
 import type { MeasuredElement } from '../fiber';
 import { useStyleOverrides } from '../hooks';
 import { formatValue, isColorProp } from '../utils';
+import { AddPropertyButton, AddPropertyRow } from './AddPropertyRow';
 import { EditableValue } from './EditableValue';
 import { PanelFooter } from './PanelFooter';
 
@@ -12,10 +14,23 @@ interface PanelBodyProps {
 
 /** Scrollable style property list with footer — the main content of the expanded panel. */
 export const PanelBody = ({ element }: PanelBodyProps) => {
-  const { entries, resolveEntry, handleToggle, handleValueChange, handleKeyChange } =
-    useStyleOverrides(element);
+  const {
+    entries,
+    addedEntries,
+    resolveEntry,
+    handleToggle,
+    handleValueChange,
+    handleKeyChange,
+    handleAddProperty,
+    handleAddedValueChange,
+    handleAddedKeyChange,
+    handleRemoveProperty,
+  } = useStyleOverrides(element);
 
-  if (entries.length === 0) return null;
+  const [pendingAdd, setPendingAdd] = useState(false);
+
+  const totalCount = entries.length + addedEntries.length;
+  if (entries.length === 0 && addedEntries.length === 0 && !pendingAdd) return null;
 
   return (
     <View style={styles.container}>
@@ -54,9 +69,49 @@ export const PanelBody = ({ element }: PanelBodyProps) => {
             </View>
           );
         })}
+
+        {addedEntries.map(([key, value], index) => {
+          const rowIndex = entries.length + index;
+          return (
+            <View key={`added-${key}`} style={[styles.row, rowIndex % 2 === 0 && styles.rowAlt]}>
+              <Checkbox checked onToggle={() => handleRemoveProperty(key)} />
+              <View style={styles.rowContent}>
+                <EditableValue
+                  value={key}
+                  displayValue={key}
+                  onSubmit={(newKey) => handleAddedKeyChange(key, String(newKey))}
+                  variant='key'
+                />
+                <View style={styles.valueContainer}>
+                  {isColorProp(key) && (
+                    <View style={[styles.colorSwatch, { backgroundColor: String(value) }]} />
+                  )}
+                  <EditableValue
+                    value={value}
+                    displayValue={formatValue(value)}
+                    onSubmit={(newValue) => handleAddedValueChange(key, newValue)}
+                    variant='value'
+                  />
+                </View>
+              </View>
+            </View>
+          );
+        })}
+
+        {pendingAdd ? (
+          <AddPropertyRow
+            onAdd={(key, value) => {
+              handleAddProperty(key, value);
+              setPendingAdd(false);
+            }}
+            onCancel={() => setPendingAdd(false)}
+          />
+        ) : (
+          <AddPropertyButton onPress={() => setPendingAdd(true)} />
+        )}
       </ScrollView>
 
-      <PanelFooter propertyCount={entries.length} width={element.width} height={element.height} />
+      <PanelFooter propertyCount={totalCount} width={element.width} height={element.height} />
     </View>
   );
 };

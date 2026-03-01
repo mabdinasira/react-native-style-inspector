@@ -1,3 +1,4 @@
+export { AddPropertyButton, AddPropertyRow } from './AddPropertyRow';
 export { CloseButton } from './CloseButton';
 export { EditableValue } from './EditableValue';
 export { FloatingPanel } from './FloatingPanel';
