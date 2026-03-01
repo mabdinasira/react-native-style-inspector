@@ -1,2 +1,2 @@
-export type { StyleInspectorProps } from './InspectorOverlay';
-export { StyleInspector } from './InspectorOverlay';
+export type { ElementInspectorProps } from './ElementInspector';
+export { ElementInspector } from './ElementInspector';

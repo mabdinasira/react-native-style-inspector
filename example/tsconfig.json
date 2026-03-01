@@ -3,8 +3,8 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
-      "react-native-style-inspector": ["../src"],
-      "react-native-style-inspector/*": ["../src/*"]
+      "react-native-element-inspector": ["../src"],
+      "react-native-element-inspector/*": ["../src/*"]
     }
   }
 }

@@ -6,7 +6,7 @@ import { ElementHighlighter } from './ElementHighlighter';
 import { FloatingPanel, type PanelState } from './floatingPanel';
 import { useDebouncedCallback, useLayoutSnapshot, useTapToSelect } from './hooks';
 
-export interface StyleInspectorProps {
+export interface ElementInspectorProps {
   /** Only enable in dev mode. Pass `__DEV__` here. */
   enabled?: boolean;
   children: ReactNode;
@@ -16,7 +16,7 @@ export interface StyleInspectorProps {
  * Root wrapper component. Wrap your app root with this.
  * In production (enabled=false), renders children with zero overhead.
  */
-export const StyleInspector = ({ enabled = false, children }: StyleInspectorProps) => {
+export const ElementInspector = ({ enabled = false, children }: ElementInspectorProps) => {
   const [isInspecting, setIsInspecting] = useState(false);
   const [highlightVisible, setHighlightVisible] = useState(false);
   const { snapshot, buildSnapshot } = useLayoutSnapshot();
@@ -49,7 +49,7 @@ export const StyleInspector = ({ enabled = false, children }: StyleInspectorProp
         setIsInspecting(true);
       } catch (error) {
         // biome-ignore lint/suspicious/noConsole: dev tool — errors should be visible
-        console.warn('[StyleInspector] Snapshot failed:', error);
+        console.warn('[ElementInspector] Snapshot failed:', error);
       }
     }
   };

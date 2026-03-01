@@ -1,6 +1,6 @@
-# react-native-style-inspector
+# react-native-element-inspector
 
-Dev-mode in-app style editor for React Native — the "Inspect Element" experience for mobile.
+On-device element inspector for React Native — the "Inspect Element" experience for mobile.
 
 ## Related Projects
 
@@ -32,7 +32,7 @@ src/
 ```
 example/
   screens/         # Test screens for each inspector capability
-  App.tsx          # Tab navigator wrapped with <StyleInspector>
+  App.tsx          # Tab navigator wrapped with <ElementInspector>
   metro.config.js  # Resolves library from ../src
 ```
 
@@ -47,7 +47,7 @@ Metro is configured to resolve the library from `../src` — edits to library co
 
 ### Technical Decisions
 
-See `react-native-style-inspector-spec.md` for full technical decisions on:
+See `react-native-element-inspector-spec.md` for full technical decisions on:
 
 - New Architecture (Fabric) support via `overrideProps()`
 - Hit-testing performance via layout snapshots

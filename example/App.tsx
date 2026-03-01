@@ -2,7 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { StyleInspector } from '../src';
+import { ElementInspector } from '../src';
 import {
   BasicLayoutScreen,
   NestedScreen,
@@ -26,7 +26,7 @@ const App = () => {
 
   return (
     <SafeAreaProvider>
-      <StyleInspector enabled={__DEV__}>
+      <ElementInspector enabled={__DEV__}>
         <View style={styles.container}>
           <StatusBar style='light' />
           <SafeAreaView style={styles.content}>
@@ -47,7 +47,7 @@ const App = () => {
             <SafeAreaView edges={['bottom']} />
           </View>
         </View>
-      </StyleInspector>
+      </ElementInspector>
     </SafeAreaProvider>
   );
 };
