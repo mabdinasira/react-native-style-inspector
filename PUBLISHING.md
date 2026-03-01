@@ -130,15 +130,37 @@ npm publish
 npm info your-package-name
 ```
 
-## Version bumps
+## Publishing updates
 
 ```bash
+# 1. Bump version (pick one)
 npm version patch   # 0.1.0 -> 0.1.1 (bug fixes)
 npm version minor   # 0.1.0 -> 0.2.0 (new features, backwards compatible)
 npm version major   # 0.1.0 -> 1.0.0 (breaking changes)
+# This creates a git commit and tag automatically
+
+# 2. Verify
+bun run test && bun run typecheck
+
+# 3. Preview the package
+npm pack --dry-run
+
+# 4. Publish
+npm publish
+
+# 5. Push the version commit and tag
+git push && git push --tags
 ```
 
-This creates a git commit and tag automatically. Then `npm publish` to push it.
+Or if you already bumped the version manually in `package.json`:
+
+```bash
+bun run test && bun run typecheck
+npm pack --dry-run
+npm publish
+git tag v$(node -p "require('./package.json').version")
+git push && git push --tags
+```
 
 ## Common gotchas
 
